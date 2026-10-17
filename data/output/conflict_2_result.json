@@ -1,0 +1,157 @@
+{
+  "simulation_only": true,
+  "input_files": {
+    "airspace": "data\\input\\sample_airspace.graphml",
+    "aircraft": "data\\input\\sample_aircraft.json",
+    "flight_plans": "data\\input\\sample_conflict_2_flight_plans.json"
+  },
+  "scenario": {
+    "waypoints": [
+      {
+        "id": "A",
+        "latitude": 41.0,
+        "longitude": 2.0
+      },
+      {
+        "id": "B",
+        "latitude": 41.0,
+        "longitude": 2.5
+      }
+    ],
+    "edges": [
+      {
+        "source": "A",
+        "target": "B",
+        "distance_nm": 30.0
+      },
+      {
+        "source": "B",
+        "target": "A",
+        "distance_nm": 30.0
+      }
+    ],
+    "aircraft": [
+      {
+        "id": "AC1",
+        "speed_kt": 480.0
+      },
+      {
+        "id": "AC2",
+        "speed_kt": 480.0
+      }
+    ],
+    "flight_plans": [
+      {
+        "aircraft_id": "AC1",
+        "route": [
+          "A",
+          "B",
+          "A"
+        ],
+        "departure_time_s": 0.0,
+        "cruise_altitude_ft": 30000.0
+      },
+      {
+        "aircraft_id": "AC2",
+        "route": [
+          "B",
+          "A",
+          "B"
+        ],
+        "departure_time_s": 0.0,
+        "cruise_altitude_ft": 30000.0
+      }
+    ]
+  },
+  "detection": {
+    "conflicts": [
+      {
+        "aircraft_1": "AC1",
+        "aircraft_2": "AC2",
+        "time_s": 112.5,
+        "horizontal_distance_nm": 0.0,
+        "vertical_distance_ft": 0.0,
+        "segment_1": [
+          "A",
+          "B"
+        ],
+        "segment_2": [
+          "B",
+          "A"
+        ]
+      },
+      {
+        "aircraft_1": "AC1",
+        "aircraft_2": "AC2",
+        "time_s": 337.5,
+        "horizontal_distance_nm": 0.0,
+        "vertical_distance_ft": 0.0,
+        "segment_1": [
+          "B",
+          "A"
+        ],
+        "segment_2": [
+          "A",
+          "B"
+        ]
+      }
+    ],
+    "validation_issues": [],
+    "separation_minima": {
+      "lateral_threshold_nm": 5.0,
+      "vertical_threshold_ft": 1000.0
+    },
+    "analysed_aircraft_ids": [
+      "AC1",
+      "AC2"
+    ],
+    "conflict_count": 2,
+    "is_valid": true,
+    "has_conflicts": true
+  },
+  "resolutions": [
+    {
+      "conflict": {
+        "aircraft_1": "AC1",
+        "aircraft_2": "AC2",
+        "time_s": 112.5,
+        "horizontal_distance_nm": 0.0,
+        "vertical_distance_ft": 0.0,
+        "segment_1": [
+          "A",
+          "B"
+        ],
+        "segment_2": [
+          "B",
+          "A"
+        ]
+      },
+      "status": "NOT_IMPLEMENTED",
+      "summary": "Maneuver planning not implemented; conflict remains unresolved.",
+      "modified_flight_plans": [],
+      "validation_notes": []
+    },
+    {
+      "conflict": {
+        "aircraft_1": "AC1",
+        "aircraft_2": "AC2",
+        "time_s": 337.5,
+        "horizontal_distance_nm": 0.0,
+        "vertical_distance_ft": 0.0,
+        "segment_1": [
+          "B",
+          "A"
+        ],
+        "segment_2": [
+          "A",
+          "B"
+        ]
+      },
+      "status": "NOT_IMPLEMENTED",
+      "summary": "Maneuver planning not implemented; conflict remains unresolved.",
+      "modified_flight_plans": [],
+      "validation_notes": []
+    }
+  ],
+  "analysis_status": "CONFLICTS_UNRESOLVED"
+}

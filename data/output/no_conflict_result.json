@@ -1,0 +1,81 @@
+{
+  "simulation_only": true,
+  "input_files": {
+    "airspace": "data\\input\\sample_airspace.graphml",
+    "aircraft": "data\\input\\sample_aircraft.json",
+    "flight_plans": "data\\input\\sample_no_conflict_flight_plans.json"
+  },
+  "scenario": {
+    "waypoints": [
+      {
+        "id": "A",
+        "latitude": 41.0,
+        "longitude": 2.0
+      },
+      {
+        "id": "B",
+        "latitude": 41.0,
+        "longitude": 2.5
+      }
+    ],
+    "edges": [
+      {
+        "source": "A",
+        "target": "B",
+        "distance_nm": 30.0
+      },
+      {
+        "source": "B",
+        "target": "A",
+        "distance_nm": 30.0
+      }
+    ],
+    "aircraft": [
+      {
+        "id": "AC1",
+        "speed_kt": 480.0
+      },
+      {
+        "id": "AC2",
+        "speed_kt": 480.0
+      }
+    ],
+    "flight_plans": [
+      {
+        "aircraft_id": "AC1",
+        "route": [
+          "A",
+          "B"
+        ],
+        "departure_time_s": 0.0,
+        "cruise_altitude_ft": 30000.0
+      },
+      {
+        "aircraft_id": "AC2",
+        "route": [
+          "B",
+          "A"
+        ],
+        "departure_time_s": 0.0,
+        "cruise_altitude_ft": 32000.0
+      }
+    ]
+  },
+  "detection": {
+    "conflicts": [],
+    "validation_issues": [],
+    "separation_minima": {
+      "lateral_threshold_nm": 5.0,
+      "vertical_threshold_ft": 1000.0
+    },
+    "analysed_aircraft_ids": [
+      "AC1",
+      "AC2"
+    ],
+    "conflict_count": 0,
+    "is_valid": true,
+    "has_conflicts": false
+  },
+  "resolutions": [],
+  "analysis_status": "NO_CONFLICTS_DETECTED"
+}
