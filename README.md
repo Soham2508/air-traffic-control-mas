@@ -74,26 +74,27 @@ atc-mas/
 
 ---
 
-## 3. Installation & Setup
+## 3. Installation & Setup with `uv`
 
-### Requirements
-- Python 3.10 to 3.12 (Tested on Python 3.12)
-- Virtual environment recommended
+This repository uses [`uv`](https://docs.astral.sh/uv/) for Python package and virtual environment management.
 
-### Installation
+### Prerequisites
+- Install `uv` if not already installed:
+  ```bash
+  # Windows (PowerShell):
+  powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+  # Linux / macOS:
+  # curl -LsSf https://astral.sh/uv/install.sh | sh
+  ```
+
+### Install Project & Dependencies
 
 ```bash
-# Create and activate virtual environment
-python -m venv .venv
-
-# Windows:
-.\.venv\Scripts\activate
-# Linux/macOS:
-# source .venv/bin/activate
-
-# Install in editable mode with development dependencies
-pip install -e ".[dev]"
+# Sync dependencies and install atc-mas in editable mode (including dev tools)
+uv sync --all-extras
 ```
+
+`uv` will automatically manage the `.venv` virtual environment and resolve dependencies with `uv.lock`.
 
 ---
 
@@ -103,7 +104,7 @@ No LLM API keys or credentials are required to run deterministic conflict detect
 
 ```bash
 # Run conflict detection on the 1-conflict sample scenario:
-python -m atc_mas detect \
+uv run python -m atc_mas detect \
   --airspace data/input/sample_airspace.graphml \
   --aircraft data/input/sample_aircraft.json \
   --flight-plans data/input/sample_conflict_flight_plans.json \
@@ -111,13 +112,13 @@ python -m atc_mas detect \
   --report data/output/atc_report.md
 
 # Run on the 0-conflict sample scenario:
-python -m atc_mas detect \
+uv run python -m atc_mas detect \
   --airspace data/input/sample_airspace.graphml \
   --aircraft data/input/sample_aircraft.json \
   --flight-plans data/input/sample_no_conflict_flight_plans.json
 
 # Run on the 2-conflict sample scenario:
-python -m atc_mas detect \
+uv run python -m atc_mas detect \
   --airspace data/input/sample_airspace.graphml \
   --aircraft data/input/sample_aircraft.json \
   --flight-plans data/input/sample_conflict_2_flight_plans.json
@@ -131,10 +132,10 @@ Outputs will be saved in `data/output/`:
 
 ## 5. Running Automated Tests
 
-Run the full pytest suite (no API key required):
+Run the full pytest suite via `uv`:
 
 ```bash
-pytest -v
+uv run pytest -v
 ```
 
 All 14 unit and integration tests pass cleanly, verifying:
