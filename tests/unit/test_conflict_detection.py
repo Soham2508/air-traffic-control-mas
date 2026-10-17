@@ -1,7 +1,8 @@
 from pathlib import Path
+
+from atc_mas.flows.routing import Route, decide_route
 from atc_mas.io.loaders import load_scenario
 from atc_mas.tools.conflict_detection import detect_conflicts
-from atc_mas.flows.routing import Route, decide_route
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DATA_INPUT = REPO_ROOT / "data" / "input"
