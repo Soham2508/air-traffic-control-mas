@@ -1,4 +1,5 @@
 from pathlib import Path
+
 from atc_mas.io.loaders import load_scenario
 from atc_mas.tools.conflict_detection import detect_conflicts
 

@@ -10,7 +10,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from pathlib import Path
 
-from atc_mas.models import ATCAnalysis, AnalysisStatus, ResolutionStatus
+from atc_mas.models import AnalysisStatus, ATCAnalysis, ResolutionStatus
 
 STATUS_EXPLANATIONS: dict[AnalysisStatus, str] = {
     AnalysisStatus.INVALID_INPUT: (

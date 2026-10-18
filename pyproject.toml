@@ -29,6 +29,24 @@ where = ["src"]
 [tool.ruff]
 line-length = 100
 target-version = "py310"
+exclude = [
+    ".venv",
+    "notebooks",
+]
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort (import order)
+]
+ignore = [
+    "E501",  # line too long (handled by formatter)
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["atc_mas"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

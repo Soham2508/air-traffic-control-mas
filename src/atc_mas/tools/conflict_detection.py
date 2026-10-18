@@ -43,7 +43,14 @@ from itertools import combinations
 import networkx as nx
 
 from atc_mas.config import DEFAULT_SEPARATION_MINIMA, SeparationMinima
-from atc_mas.models import Aircraft, Conflict, ConflictDetectionResult, FlightPlan, Scenario, TrajectoryPoint
+from atc_mas.models import (
+    Aircraft,
+    Conflict,
+    ConflictDetectionResult,
+    FlightPlan,
+    Scenario,
+    TrajectoryPoint,
+)
 from atc_mas.validation import (
     duplicate_flight_plan_issues,
     validate_aircraft_ids,
