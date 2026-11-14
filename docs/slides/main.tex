@@ -1,0 +1,69 @@
+
+\documentclass[aspectratio=169,11pt]{beamer}
+
+% ===== PACKAGES =====
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric}
+\usepackage{graphicx}
+
+% ===== THEME =====
+\usetheme{Madrid}
+\usecolortheme{default}
+
+% Temporary shared palette.
+% Replace values with exact PR #3 colors if needed.
+\definecolor{atcnavy}{HTML}{142D4E}
+\definecolor{atcamber}{HTML}{E5A83B}
+\definecolor{atcblue}{HTML}{2875A7}
+\definecolor{atclight}{HTML}{F2F5F9}
+
+\setbeamercolor{structure}{fg=atcnavy}
+\setbeamercolor{frametitle}{fg=white,bg=atcnavy}
+\setbeamercolor{title}{fg=white,bg=atcnavy}
+\setbeamercolor{block title}{fg=white,bg=atcblue}
+\setbeamercolor{block body}{bg=atclight}
+
+\setbeamertemplate{navigation symbols}{}
+
+\setbeamertemplate{footline}{
+  \hfill
+  \insertframenumber/\inserttotalframenumber
+  \hspace{0.5cm}\vspace{0.2cm}
+}
+
+% ===== PRESENTATION METADATA =====
+\title[ATC-MAS]{Air Traffic Control Multi-Agent System}
+\subtitle{Task 1: Design Activity}
+
+\author{ATC-MAS Team 6}
+\institute{Universitat Rovira i Virgili}
+\date{November 2026}
+
+% Compact itemized lists
+\setbeamertemplate{itemize item}{\scriptsize\raise1pt\hbox{$\bullet$}}
+\setbeamertemplate{itemize subitem}{\tiny\raise1pt\hbox{$\circ$}}
+
+% Reduce list indentation
+\setlength{\leftmargini}{1.2em}
+\setlength{\leftmarginii}{1em}
+
+% ===== BEGIN PRESENTATION =====
+\begin{document}
+
+\input{sections/01_title}
+\input{sections/02_problem}
+\input{sections/03_overview}
+\input{sections/04_environment}
+\input{sections/05_crews_1_2}
+\input{sections/06_crews_3_5}
+\input{sections/07_tools}
+\input{sections/08_taxonomy_properties}
+\input{sections/09_taxonomy_types}
+\input{sections/10_conclusions}
+
+\end{document}

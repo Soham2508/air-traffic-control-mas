@@ -1,0 +1,48 @@
+
+% Slide 4: Environment Analysis
+
+\begin{frame}{Environment Analysis}
+
+\small
+
+\begin{table}
+\centering
+\begin{tabular}{p{2.2cm}p{2.4cm}p{5.1cm}}
+\toprule
+\textbf{Property} &
+\textbf{Our System} &
+\textbf{Justification} \\
+\midrule
+
+Accessibility &
+Accessible &
+[Complete scenario inputs; agent-local views.] \\
+
+Determinism &
+Deterministic &
+[Fixed simulation rules; distinguish LLM variability.] \\
+
+Episodicity &
+Mixed &
+[Independent runs; dependent actions within a run.] \\
+
+Dynamics &
+Static &
+[No new real-time inputs during execution.] \\
+
+Continuity &
+Hybrid &
+[Continuous quantities; finite manoeuvre catalogue.] \\
+
+\bottomrule
+\end{tabular}
+\end{table}
+
+\vspace{0.2cm}
+
+\begin{block}{Design Implication}
+    [Explain why deliberative planning and
+    independent safety validation are appropriate.]
+\end{block}
+
+\end{frame}
