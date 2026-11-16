@@ -1,44 +1,52 @@
-
 % Slide 4: Environment Analysis
+% Property names follow Lecture 2 (Russell & Norvig dichotomies).
+% Main argument: contrast between real ATC and our simulation.
 
 \begin{frame}{Environment Analysis}
 
-\small
+\scriptsize
 
 \begin{table}
 \centering
-\begin{tabular}{p{2.2cm}p{2.4cm}p{5.1cm}}
+\renewcommand{\arraystretch}{1.15}
+\begin{tabular}{*{4}{>{\raggedright\arraybackslash}p{3.3cm}}}
 \toprule
 \textbf{Property} &
-\textbf{Our System} &
+\textbf{Real ATC} &
+\textbf{Our Simulation} &
 \textbf{Justification} \\
 \midrule
 
-Accessibility &
+Accessible / inaccessible &
+Inaccessible: radar noise, unknown pilot intent &
 Accessible &
 [Complete scenario inputs; agent-local views.] \\
 
-Determinism &
+Deterministic / non-deterministic &
+Non-deterministic: weather, pilot response &
 Deterministic &
 [Fixed simulation rules; distinguish LLM variability.] \\
 
-Episodicity &
-Mixed &
+Episodic / non-episodic &
+Non-episodic &
+Episodic across runs, non-episodic within a run &
 [Independent runs; dependent actions within a run.] \\
 
-Dynamics &
+Static / dynamic &
+Dynamic: traffic keeps moving &
 Static &
 [No new real-time inputs during execution.] \\
 
-Continuity &
-Hybrid &
+Discrete / continuous &
+Continuous &
+Discrete &
 [Continuous quantities; finite manoeuvre catalogue.] \\
 
 \bottomrule
 \end{tabular}
 \end{table}
 
-\vspace{0.2cm}
+\vspace{0.1cm}
 
 \begin{block}{Design Implication}
     [Explain why deliberative planning and

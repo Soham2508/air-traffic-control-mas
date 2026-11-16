@@ -10,17 +10,14 @@
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta,positioning,shapes.geometric}
 \usepackage{graphicx}
+\usepackage{pifont} % \ding symbols for the taxonomy table
 
 % ===== THEME =====
 \usetheme{Madrid}
 \usecolortheme{default}
 
-% Temporary shared palette.
-% Replace values with exact PR #3 colors if needed.
-\definecolor{atcnavy}{HTML}{142D4E}
-\definecolor{atcamber}{HTML}{E5A83B}
-\definecolor{atcblue}{HTML}{2875A7}
-\definecolor{atclight}{HTML}{F2F5F9}
+% Shared palette (same file as the report, so colours cannot drift)
+\input{../atc_colors}
 
 \setbeamercolor{structure}{fg=atcnavy}
 \setbeamercolor{frametitle}{fg=white,bg=atcnavy}
@@ -41,7 +38,7 @@
 \subtitle{Task 1: Design Activity}
 
 \author{ATC-MAS Team 6}
-\institute{Universitat Rovira i Virgili}
+\institute{Multi-Agent Systems -- MAI, ETSE-URV}
 \date{November 2026}
 
 % Compact itemized lists

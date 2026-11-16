@@ -5,7 +5,7 @@
 \begin{frame}{System Overview}
 \centering
 
-\resizebox{0.96\textwidth}{!}{%
+\resizebox{0.94\textwidth}{!}{%
 \begin{tikzpicture}[
     >=Stealth,
     crew/.style={
@@ -62,6 +62,18 @@
 % ROW 1: PROCESSING CREWS
 % ==========================================
 
+\node[
+    draw=atcslate,
+    fill=white,
+    rounded corners=3pt,
+    line width=0.8pt,
+    minimum height=0.90cm,
+    text width=1.9cm,
+    align=center,
+    font=\scriptsize
+] (inputs) at (-2.9,0)
+    {\textbf{Inputs}\\(GraphML + JSON)};
+
 \node[crew] (dm) at (0,0)
     {1. Data\\Management};
 
@@ -82,7 +94,7 @@
     {A: Inputs valid?};
 
 \node[decision] (b) at (3.5,-1.8)
-    {B: Conflicts found?};
+    {\shortstack{B: Conflicts\\found?}};
 
 \node[decision] (c) at (10.5,-1.8)
     {C: Validated?};
@@ -113,6 +125,7 @@
 % CREW -> DECISION
 % ==========================================
 
+\draw[process] (inputs.east) -- (dm.west);
 \draw[process] (dm.south) -- (a.north);
 \draw[process] (sc.south) -- (b.north);
 \draw[process] (sv.south) -- (c.north);
@@ -232,7 +245,6 @@
 \end{tikzpicture}%
 }
 
-\vspace{0.15cm}
 
 {\scriptsize
 \textbf{5 crews}
