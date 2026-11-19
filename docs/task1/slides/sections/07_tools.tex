@@ -1,0 +1,42 @@
+
+% Slide 7: Tools
+
+\begin{frame}{Tools and Agent Responsibilities}
+
+\scriptsize
+
+\begin{table}
+\centering
+\begin{tabular}{clc}
+\toprule
+\textbf{ID} & \textbf{Tool} & \textbf{Agent} \\
+\midrule
+T1 & AirspaceGraphLoaderTool & 1 \\
+T2 & FlightDataNormalizerTool & 2 \\
+T3 & TrajectoryExtrapolatorTool & 3 \\
+T4 & ConflictDetectionTool & 4, 7 \\
+T5 & ManeuverCalculationTool & 5 \\
+T6 & AirspaceGraphRoutingTool & 6 \\
+T7 & ConstraintCheckerTool & 7 \\
+T8 & MarkdownReportRendererTool & 8 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\vspace{0.25cm}
+
+\begin{block}{Required Custom Tools}
+\begin{itemize}
+    \item \textbf{T4:} Detects and characterises conflicts.
+    \item \textbf{T5:} Calculates candidate resolution
+    manoeuvres within aircraft constraints.
+\end{itemize}
+\end{block}
+
+\begin{center}
+\small
+\textbf{Design principle:}
+\textit{tools compute every number; LLM agents decide and explain.}
+\end{center}
+
+\end{frame}
