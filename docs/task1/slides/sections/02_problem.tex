@@ -4,23 +4,28 @@
 \begin{frame}{Problem and Goals}
 
 \begin{block}{Problem}
-    [Briefly describe the ATC conflict-resolution
-    problem and why a multi-agent approach
-    is suitable.]
+\small
+Aircraft are in \textbf{conflict} when they are predicted to be within
+\textbf{5\,NM horizontally and 1000\,ft vertically} at the same moment.
+Detecting, assessing and resolving conflicts needs distinct expertise,
+so we model the task as \textbf{cooperating crews of agents}.
 \end{block}
 
 \begin{block}{System Goals}
+\small
     \begin{itemize}
-        \item Detect aircraft conflicts.
-        \item Characterise and prioritise conflicts.
+        \setlength{\itemsep}{1pt}
+        \item Validate and normalise the input data.
+        \item Detect, characterise and prioritise conflicts.
         \item Calculate and validate resolution manoeuvres.
         \item Generate flight-clearance reports.
     \end{itemize}
 \end{block}
 
 \begin{alertblock}{Scope}
-    Simulated, batch-processing environment;
-    not a real-time operational ATC system.
+\small
+    Simulated batch system, not real-time ATC. Inputs: airspace (GraphML),
+    aircraft and flight plans (JSON), performance limits, optional restrictions.
 \end{alertblock}
 
 \end{frame}
