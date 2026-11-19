@@ -1,0 +1,81 @@
+% ATC-MAS -- Task 1 (Design activity) report
+% IEEE template (IEEEtran, conference style), one column.
+% Build:  cd docs/task1 && latexmk -pdf main.tex
+% Each section lives in sections/ with NO preamble; one owner per file (see roadmap section 3).
+
+\documentclass[conference,onecolumn,a4paper,11pt]{IEEEtran}
+
+% ===== PACKAGES =====
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{cite}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\let\labelindent\relax              % IEEEtran and enumitem both define \labelindent
+\usepackage{enumitem}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{xcolor}
+\usepackage{pifont}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,shapes.geometric}
+\usepackage{tcolorbox}
+\usepackage{url}
+
+% Shared palette (same file as the slides, so colours cannot drift)
+\input{atc_colors}
+
+\usepackage[hidelinks]{hyperref}
+
+% Boxed justification used in the agent section (from PR #3)
+\newtcolorbox{successbox}[1][]{
+    colback=green!5,
+    colframe=green!50!black,
+    title=#1,
+    fonttitle=\bfseries
+}
+
+% Visible placeholder for text not written yet
+\newcommand{\placeholder}[1]{\textcolor{atcred}{\textit{[#1]}}}
+
+\begin{document}
+
+% ===== TITLE =====
+\title{Air Traffic Control Multi-Agent System\\
+       \large Task 1: Design Activity}
+
+% TODO(each member): check the spelling of your own name (same list as slide 1).
+\author{\IEEEauthorblockN{Aram Abrahamyan, Fardin Ahmed, Soham Chakraborty,\\
+                          Luis David Landicho Antonio, Mullur Gopal House, Vinay Narayanappa}
+\IEEEauthorblockA{ATC-MAS Team 6\\
+                  Multi-Agent Systems -- MAI, ETSE-URV\\
+                  November 2026}}
+
+\maketitle
+
+\begin{abstract}
+\placeholder{Abstract (Aram): 4--6 sentences summarising the problem, the five crews, the flow and the main design choices. Write it last.}
+\end{abstract}
+
+\begin{IEEEkeywords}
+multi-agent systems, air traffic control, conflict detection and resolution, CrewAI, agent taxonomy
+\end{IEEEkeywords}
+
+\input{sections/00_intro}                 % Aram
+\input{sections/01_overview}              % Aram (figure shared with slide 3)
+\input{sections/02_environment}           % ekagrahvinay-netizen
+\input{sections/03a_agents}               % fardinAhmed285 (from PR #3)
+\input{sections/03b_tools}                % Soham2508
+\input{sections/03c_resolution_strategy}  % luisdavidantonio
+\input{sections/04_taxonomy}              % bhavan-glitch
+\input{sections/05_conclusions}           % Aram
+
+% TODO(Aram): remove \nocite{*} once the sections cite their sources;
+% it only keeps BibTeX from failing while no section has a \cite yet.
+\nocite{*}
+\bibliographystyle{IEEEtran}
+\bibliography{refs}
+
+\end{document}
