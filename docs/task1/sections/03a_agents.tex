@@ -1,9 +1,8 @@
-
-\section{Agent Selection \& Multi-Crew Architecture}
+\section{Agent Selection and Definition}\label{sec:agents}
 
 \subsection{Architectural Addition: Safety Validation \& Quality Assurance Crew}
 
-The proposed ATC-MAS architecture is organised into five specialised crews: Data Management, Surveillance \& Conflict, Tactical Resolution, Safety Validation \& Quality Assurance, and Reporting. The first four responsibilities originate from the main system workflow. We introduce exactly one additional crew, the Safety Validation \& Quality Assurance Crew, to provide an independent review of proposed flight-plan changes.
+The proposed ATC-MAS architecture is organised into five specialised crews: Data Management, Surveillance \& Conflict, Tactical Resolution, Safety Validation \& Quality Assurance, and Reporting. The four crews required by the assignment are complemented by exactly one additional crew, placed fourth in the flow: the Safety Validation \& Quality Assurance Crew, which provides an independent review of proposed flight-plan changes.
 
 This additional crew addresses an important safety consideration in air traffic management: resolving one conflict does not necessarily guarantee that the resulting flight plans are safe. For example, changing Aircraft A's route to avoid Aircraft B could introduce a new conflict with Aircraft C. Therefore, proposed changes must be checked against the other aircraft in the scenario before a final clearance decision is made.
 
@@ -11,250 +10,7 @@ The separation of planning and validation also avoids having the same crew both 
 
 Weather information, where available, is treated as an optional input to the constraint-checking process rather than as a separate crew.
 
-\begin{figure}[htbp]
-\centering
-\resizebox{\textwidth}{!}{%
-\begin{tikzpicture}[
-    >=Stealth,
-    crew/.style={
-        draw=atcnavy,
-        fill=atclight,
-        rounded corners=3pt,
-        line width=0.9pt,
-        minimum width=2.55cm,
-        minimum height=0.90cm,
-        text width=2.35cm,
-        align=center,
-        font=\scriptsize\bfseries
-    },
-    decision/.style={
-        draw=atcamber,
-        fill=atcamber!12,
-        rounded corners=3pt,
-        line width=0.8pt,
-        minimum width=2.25cm,
-        minimum height=0.65cm,
-        text width=2.05cm,
-        align=center,
-        font=\scriptsize
-    },
-    process/.style={
-        ->,
-        draw=atcnavy,
-        line width=1pt
-    },
-    success/.style={
-        ->,
-        draw=green!50!black,
-        line width=1.1pt
-    },
-    exception/.style={
-        ->,
-        draw=red!70!black,
-        line width=1.1pt
-    },
-    retry/.style={
-        ->,
-        draw=atcamber!90!black,
-        dashed,
-        line width=1.2pt
-    },
-    lab/.style={
-        font=\scriptsize,
-        fill=white,
-        inner sep=2pt
-    }
-]
-
-% ==========================================
-% ROW 1: PROCESSING CREWS
-% ==========================================
-
-\node[
-    draw=atcslate,
-    fill=white,
-    rounded corners=3pt,
-    line width=0.8pt,
-    minimum height=0.90cm,
-    text width=1.9cm,
-    align=center,
-    font=\scriptsize
-] (inputs) at (-2.9,0)
-    {\textbf{Inputs}\\(GraphML + JSON)};
-
-\node[crew] (dm) at (0,0)
-    {1. Data\\Management};
-
-\node[crew] (sc) at (3.5,0)
-    {2. Surveillance\\\& Conflict};
-
-\node[crew] (tr) at (7.0,0)
-    {3. Tactical\\Resolution};
-
-\node[crew] (sv) at (10.5,0)
-    {4. Safety\\Validation \& QA};
-
-% ==========================================
-% ROW 2: DECISIONS
-% ==========================================
-
-\node[decision] (a) at (0,-1.8)
-    {A: Inputs valid?};
-
-\node[decision] (b) at (3.5,-1.8)
-    {\shortstack{B: Conflicts\\found?}};
-
-\node[decision] (c) at (10.5,-1.8)
-    {C: Validated?};
-
-% ==========================================
-% ROW 3: SHARED REPORTING DESTINATION
-% ==========================================
-
-\node[
-    draw=atcnavy,
-    fill=atclight,
-    rounded corners=4pt,
-    line width=1pt,
-    minimum width=13.15cm,
-    minimum height=0.90cm,
-    align=center,
-    font=\small\bfseries
-] (report) at (5.25,-4.15)
-    {5. Reporting};
-
-% Explicit ports on the reporting bar
-\coordinate (rA) at (0,-3.70);
-\coordinate (rB) at (3.5,-3.70);
-\coordinate (rC) at (10.5,-3.70);
-\coordinate (rEnd) at (11.5,-3.70);
-
-% ==========================================
-% CREW -> DECISION
-% ==========================================
-
-\draw[process] (inputs.east) -- (dm.west);
-\draw[process] (dm.south) -- (a.north);
-\draw[process] (sc.south) -- (b.north);
-\draw[process] (sv.south) -- (c.north);
-
-% ==========================================
-% A: VALID INPUT -> SURVEILLANCE
-% ==========================================
-
-\draw[process]
-    (a.east) -- (1.75,-1.8)
-    -- (1.75,0)
-    -- (sc.west);
-
-\node[lab] at (1.30,-1.0) {Valid};
-
-% A: INVALID INPUT -> REPORTING
-\draw[exception]
-    (a.south) -- (rA);
-
-\node[
-    font=\scriptsize,
-    anchor=west,
-    fill=white
-] at (0.18,-2.85)
-    {Invalid input};
-
-% ==========================================
-% B: CONFLICT FOUND -> TACTICAL
-% ==========================================
-
-\draw[process]
-    (b.east) -- (5.25,-1.8)
-    -- (5.25,0)
-    -- (tr.west);
-
-\node[
-    font=\scriptsize,
-    anchor=east,
-    align=center,
-    fill=white,
-    inner sep=2pt
-] at (5.20,-1.0)
-    {\shortstack{Conflict\\detected}};
-
-\draw[success]
-    (b.south) -- (rB);
-
-\node[
-    font=\scriptsize,
-    anchor=west,
-    fill=white
-] at (3.68,-2.85)
-    {No conflicts};
-
-% ==========================================
-% TACTICAL -> SAFETY VALIDATION
-% ==========================================
-
-\draw[process] (tr.east) -- (sv.west);
-
-% ==========================================
-% C: VALIDATED -> REPORTING
-% ==========================================
-
-\draw[success]
-    (c.south) -- (rC);
-
-\node[
-    font=\scriptsize,
-    anchor=east,
-    fill=white,
-    inner sep=2pt
-] at (10.25,-2.85)
-    {Validated};
-
-% ==========================================
-% C: REJECTED -> TACTICAL RETRY
-% ==========================================
-
-\draw[retry]
-    (c.east) -- (12.4,-1.8)
-    -- (12.4,1.15)
-    -- (7.0,1.15)
-    -- (tr.north);
-
-\node[lab] at (9.7,1.36)
-    {\textbf{Rejected}: retry if attempts $<N$};
-
-% ==========================================
-% C: RETRY LIMIT REACHED -> REPORTING
-% ==========================================
-
-\draw[exception]
-    (c.east) -- (11.85,-1.8)
-    -- (11.85,-3.35)
-    -- (11.5,-3.35)
-    -- (rEnd);
-
-\node[
-    font=\scriptsize,
-    anchor=west,
-    fill=white,
-    inner sep=2pt
-] at (11.95,-2.85)
-    {\shortstack{Limit\\Reached}};
-
-% ==========================================
-% FINAL OUTPUT
-% ==========================================
-
-\node[
-    font=\scriptsize,
-    align=center
-] at (5.25,-4.95)
-    {Final clearance statuses and Markdown ATC report};
-
-\end{tikzpicture}%
-}
-\caption{Proposed CrewAI multi-agent architecture showing five crews, eight agents, and three routing decisions.}
-\label{fig:atc-mas-architecture}
-\end{figure}
+The overall crew workflow is shown in Fig.~\ref{fig:flow}.
 
 
 \subsection{Detailed Agent Specifications}
@@ -293,7 +49,7 @@ This crew analyses the prepared flight plans and identifies potential losses of 
 
     \item \textbf{Agent 3: Aircraft Tracker}
     \begin{itemize}
-        \item \textit{Who it is:} An agent that tracks aircraft positions and predicts where they will be in the future.
+        \item \textit{Who it is:} An agent that predicts aircraft positions from the flight plans.
         \item \textit{Main Task:} Calculate future aircraft positions using waypoint coordinates, flight levels and cruising speeds. Represent each aircraft's predicted path over time using $(x(t), y(t), z(t))$.
         \item \textit{Tool:} \texttt{T3 -- TrajectoryExtrapolatorTool}.
     \end{itemize}
@@ -340,7 +96,7 @@ This additional crew independently checks the flight-plan changes proposed by th
     \item \textbf{Agent 7: Safety Checker}
     \begin{itemize}
         \item \textit{Who it is:} An independent agent that checks whether proposed flight-plan changes are safe.
-        \item \textit{Main Task:} Check the modified flight plans against all other aircraft. Make sure the original conflict is resolved and no new conflicts are introduced. Check separation requirements and aircraft constraints. Mark each manoeuvre as \texttt{VALIDATED} or \texttt{REJECTED}, with a reason. Send rejected proposals back to the tactical resolution crew for another attempt, subject to the configured retry limit.
+        \item \textit{Main Task:} Check the modified flight plans against all other aircraft. Make sure the original conflict is resolved and no new conflicts are introduced. Check separation requirements and aircraft constraints. Mark each manoeuvre as \texttt{VALIDATED} or \texttt{REJECTED}, with a reason. Send rejected proposals back to the tactical resolution crew, with at most $N = 2$ planning attempts (one retry).
         \item \textit{Tools:} \texttt{T4 -- ConflictDetectionTool} and \texttt{T7 -- ConstraintCheckerTool}.
     \end{itemize}
 
@@ -371,4 +127,4 @@ The proposed architecture separates data preparation, surveillance, tactical pla
 The additional Safety Validation \& Quality Assurance Crew is important because a proposed manoeuvre can resolve one conflict while creating another. Independent validation therefore checks the wider traffic situation before a final clearance status is assigned. If a proposal is rejected, the workflow can return it to the tactical resolution crew for another attempt. If the retry limit is reached without an accepted proposal, the affected flight must not be reported as cleared.
 
 
-The architecture combines tools that perform specific tasks with agents that make decisions. Tools handle operations such as loading airspace data, predicting aircraft movements, detecting conflicts, calculating manoeuvres, checking safety and generating reports. Agents use the results to decide what actions to take and explain their decisions.
+The crews use specialised tools to support agent decision-making, following the design principle described in Section~\ref{sec:principle}.
