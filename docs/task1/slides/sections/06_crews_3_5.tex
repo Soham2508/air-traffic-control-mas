@@ -9,21 +9,23 @@
 \begin{block}{Crew 3: Tactical}
 \scriptsize
 
-\textbf{A5: Tactical Separation Controller}
+\textbf{A5: Flight Change Planner}
 
 \vspace{0.15cm}
 Tool: T5
 
-[Short explanation]
+\vspace{0.1cm}
+Proposes altitude changes, speed changes or departure delays within aircraft limits.
 
 \vspace{0.3cm}
 
-\textbf{A6: Flight Path Re-Router}
+\textbf{A6: Route Planner}
 
 \vspace{0.15cm}
 Tool: T6
 
-[Short explanation]
+\vspace{0.1cm}
+Finds alternative routes through the airspace network.
 
 \end{block}
 \end{column}
@@ -32,15 +34,13 @@ Tool: T6
 \begin{block}{Crew 4: Safety}
 \scriptsize
 
-\textbf{A7: Airspace Safety \& Compliance Auditor}
+\textbf{A7: Safety Checker}
 
 \vspace{0.15cm}
 Tools: T4, T7
 
 \vspace{0.2cm}
-
-[Independent validation and secondary
-conflict checking.]
+Independently checks proposed changes for original and secondary conflicts. Marks each proposal as \texttt{VALIDATED} or \texttt{REJECTED}, with a reason.
 
 \end{block}
 \end{column}
@@ -49,14 +49,16 @@ conflict checking.]
 \begin{block}{Crew 5: Reporting}
 \scriptsize
 
-\textbf{A8: ATC Clearance \& Reporting Officer}
+\textbf{A8: ATC Reporter}
 
 \vspace{0.15cm}
 Tool: T8
 
 \vspace{0.2cm}
-
-[Final clearance status and report.]
+Prepares the final report and assigns each flight a status:
+\texttt{CLEARED},
+\texttt{CLEARED WITH AMENDMENT}
+or \texttt{NOT CLEARED}.
 
 \end{block}
 \end{column}
@@ -67,8 +69,12 @@ Tool: T8
 
 \begin{center}
 \footnotesize
-\textbf{Why an extra crew:}
-planning and safety validation are independent.
+\textbf{Why add Crew 4?}
+
+The planner must not validate its own changes.
+A proposed fix may create a conflict with another aircraft.
+Independent validation provides a separate safety check.
+
 \end{center}
 
 \end{frame}
