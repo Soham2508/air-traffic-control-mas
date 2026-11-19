@@ -1,7 +1,130 @@
-% Owner: fardinAhmed285
-% No preamble here: only the section body. Packages and colours come from ../main.tex.
-% Cite sources with keys from ../refs.bib (e.g. \cite{urvlect2}).
-% Guidance: extra-crew decision and the 8 agents: who it is / main task / tools (roadmap 2.1, PR #3).
 \section{Agent Selection and Definition}\label{sec:agents}
 
-\placeholder{To be written by fardinAhmed285.}
+\subsection{Architectural Addition: Safety Validation \& Quality Assurance Crew}
+
+The proposed ATC-MAS architecture is organised into five specialised crews: Data Management, Surveillance \& Conflict, Tactical Resolution, Safety Validation \& Quality Assurance, and Reporting. The four crews required by the assignment are complemented by exactly one additional crew, placed fourth in the flow: the Safety Validation \& Quality Assurance Crew, which provides an independent review of proposed flight-plan changes.
+
+This additional crew addresses an important safety consideration in air traffic management: resolving one conflict does not necessarily guarantee that the resulting flight plans are safe. For example, changing Aircraft A's route to avoid Aircraft B could introduce a new conflict with Aircraft C. Therefore, proposed changes must be checked against the other aircraft in the scenario before a final clearance decision is made.
+
+The separation of planning and validation also avoids having the same crew both propose and certify its own changes. An independent validation crew can assess the revised plans, identify secondary conflicts, and reject proposals that do not satisfy the defined safety constraints. This separation also makes the validation process independently assessable.
+
+Weather information, where available, is treated as an optional input to the constraint-checking process rather than as a separate crew.
+
+The overall crew workflow is shown in Fig.~\ref{fig:flow}.
+
+
+\subsection{Detailed Agent Specifications}
+
+The architecture contains eight specialised agents distributed across the five crews. Each agent has a defined responsibility and access to the tools required for its tasks. The tools perform the deterministic operations, while the agents coordinate the workflow, interpret results, and make decisions within their assigned responsibilities.
+
+
+\subsubsection{Crew 1: Data Management Crew}
+
+This crew prepares and validates the input data before it enters the surveillance and conflict analysis stage.
+
+\begin{itemize}[leftmargin=*]
+
+    \item \textbf{Agent 1: Airspace Loader}
+    \begin{itemize}
+        \item \textit{Who it is:} An agent that works with airspace maps, airports, waypoints and flight routes.
+        \item \textit{Main Task:} Load the airspace network from the GraphML file, check waypoint locations and connections, and prepare the network for the other agents to use.
+        \item \textit{Tool:} \texttt{T1 -- AirspaceGraphLoaderTool}.
+    \end{itemize}
+
+    \item \textbf{Agent 2: Flight Data Checker}
+    \begin{itemize}
+        \item \textit{Who it is:} An agent that checks and prepares aircraft and flight-plan data.
+        \item \textit{Main Task:} Read the aircraft specifications and flight-plan JSON files, match each aircraft to its flight plan, check timestamp order, and convert the data into consistent Pydantic \texttt{FlightPlanModel} instances.
+        \item \textit{Tool:} \texttt{T2 -- FlightDataNormalizerTool}.
+    \end{itemize}
+
+\end{itemize}
+
+
+\subsubsection{Crew 2: Surveillance \& Conflict Crew}
+
+This crew analyses the prepared flight plans and identifies potential losses of separation between aircraft.
+
+\begin{itemize}[leftmargin=*]
+
+    \item \textbf{Agent 3: Aircraft Tracker}
+    \begin{itemize}
+        \item \textit{Who it is:} An agent that predicts aircraft positions from the flight plans.
+        \item \textit{Main Task:} Calculate future aircraft positions using waypoint coordinates, flight levels and cruising speeds. Represent each aircraft's predicted path over time using $(x(t), y(t), z(t))$.
+        \item \textit{Tool:} \texttt{T3 -- TrajectoryExtrapolatorTool}.
+    \end{itemize}
+
+    \item \textbf{Agent 4: Conflict Detector}
+    \begin{itemize}
+        \item \textit{Who it is:} An agent that identifies and analyses situations where aircraft may get too close to each other.
+        \item \textit{Main Task:} Compare aircraft trajectories and detect a conflict when both conditions are met at the same time: horizontal distance is at most $5\text{ NM}$ AND vertical distance is at most $1{,}000\text{ ft}$. For each conflict, calculate the Closest Point of Approach (CPA), estimate the time until separation is lost, identify the encounter type (head-on, crossing or same-track), assess its severity and rank it by priority.
+        \item \textit{Tool:} \texttt{T4 -- ConflictDetectionTool}.
+    \end{itemize}
+
+\end{itemize}
+
+
+\subsubsection{Crew 3: Tactical Resolution Crew}
+
+This crew develops possible actions to resolve the conflicts identified by the surveillance crew.
+
+\begin{itemize}[leftmargin=*]
+
+    \item \textbf{Agent 5: Flight Change Planner}
+    \begin{itemize}
+        \item \textit{Who it is:} An agent that plans changes to aircraft flights to restore safe separation.
+        \item \textit{Main Task:} Choose which aircraft needs a change and propose possible manoeuvres. These include changing flight level by $1{,}000$ or $2{,}000\text{ ft}$, changing speed by $10$ or $20\text{ kt}$, or delaying departure. All changes must stay within the aircraft's operational and performance limits. Evaluate the options and select a preferred proposal.
+        \item \textit{Tool:} \texttt{T5 -- ManeuverCalculationTool}.
+    \end{itemize}
+
+    \item \textbf{Agent 6: Route Planner}
+    \begin{itemize}
+        \item \textit{Who it is:} An agent that finds alternative flight routes.
+        \item \textit{Main Task:} Find another route through the GraphML airway network when altitude or speed changes are not suitable or sufficient. Suggest a new sequence of waypoints that respects aircraft constraints and maintains separation from other aircraft.
+        \item \textit{Tool:} \texttt{T6 -- AirspaceGraphRoutingTool}.
+    \end{itemize}
+
+\end{itemize}
+
+
+\subsubsection{Crew 4: Safety Validation \& Quality Assurance Crew}
+
+This additional crew independently checks the flight-plan changes proposed by the tactical resolution crew. It does not approve its own planning decisions.
+
+\begin{itemize}
+
+    \item \textbf{Agent 7: Safety Checker}
+    \begin{itemize}
+        \item \textit{Who it is:} An independent agent that checks whether proposed flight-plan changes are safe.
+        \item \textit{Main Task:} Check the modified flight plans against all other aircraft. Make sure the original conflict is resolved and no new conflicts are introduced. Check separation requirements and aircraft constraints. Mark each manoeuvre as \texttt{VALIDATED} or \texttt{REJECTED}, with a reason. Send rejected proposals back to the tactical resolution crew, with at most $N = 2$ planning attempts (one retry).
+        \item \textit{Tools:} \texttt{T4 -- ConflictDetectionTool} and \texttt{T7 -- ConstraintCheckerTool}.
+    \end{itemize}
+
+\end{itemize}
+
+
+\subsubsection{Crew 5: Reporting Crew}
+
+This crew collects the results from the other crews and prepares the final output.
+
+\begin{itemize}
+
+    \item \textbf{Agent 8: ATC Reporter}
+    \begin{itemize}
+        \item \textit{Who it is:} An agent that prepares the final air traffic control report.
+        \item \textit{Main Task:} Collect the airspace information, detected conflicts, proposed manoeuvres and validation results. Explain the decisions in a structured Markdown ATC report. Give each flight one final status: \texttt{CLEARED}, \texttt{CLEARED WITH AMENDMENT}, or \texttt{NOT CLEARED}.
+        \item \textit{Tool:} \texttt{T8 -- MarkdownReportRendererTool}.
+    \end{itemize}
+
+\end{itemize}
+
+
+
+\subsection{Design Rationale and Safety Considerations}
+
+The proposed architecture separates data preparation, surveillance, tactical planning, independent validation, and reporting. This division gives each agent a focused responsibility while allowing the crews to coordinate through a defined workflow.
+
+The additional Safety Validation \& Quality Assurance Crew is important because a proposed manoeuvre can resolve one conflict while creating another. Independent validation therefore checks the wider traffic situation before a final clearance status is assigned. If a proposal is rejected, the workflow can return it to the tactical resolution crew for another attempt. If the retry limit is reached without an accepted proposal, the affected flight must not be reported as cleared.
+
+
+The crews use specialised tools to support agent decision-making, following the design principle described in Section~\ref{sec:principle}.

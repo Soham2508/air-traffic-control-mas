@@ -12,21 +12,19 @@
 \begin{block}{Crew 1: Data Management}
 \scriptsize
 
-\textbf{A1: Airspace \& Topology
-Ingestion Specialist}
+\textbf{A1: Airspace Loader}
 
 \vspace{0.1cm}
-Task: [Brief responsibility]
+Task: Loads the GraphML airspace network and checks waypoint locations and airway connections.
 
 Tool: T1
 
 \vspace{0.3cm}
 
-\textbf{A2: Flight Data
-Normalization Officer}
+\textbf{A2: Flight Data Checker}
 
 \vspace{0.1cm}
-Task: [Brief responsibility]
+Task: Matches aircraft specifications with flight plans, checks timestamps and prepares consistent Pydantic data.
 
 Tool: T2
 
@@ -40,21 +38,19 @@ Tool: T2
 \begin{block}{Crew 2: Surveillance \& Conflict}
 \scriptsize
 
-\textbf{A3: Radar Surveillance \&
-Trajectory Extrapolator}
+\textbf{A3: Aircraft Tracker}
 
 \vspace{0.1cm}
-Task: [Brief responsibility]
+Task: Predicts aircraft positions from the flight plans.
 
 Tool: T3
 
 \vspace{0.3cm}
 
-\textbf{A4: Separation \& Conflict
-Detection Specialist}
+\textbf{A4: Conflict Detector}
 
 \vspace{0.1cm}
-Task: [Brief responsibility]
+Task: Detects conflicts when horizontal separation is 5 NM or less AND vertical separation is 1,000 ft or less. Records CPA, time to loss of separation, conflict geometry, severity and ranking.
 
 Tool: T4
 
