@@ -3,29 +3,44 @@
 
 \begin{frame}{Conclusions and Next Steps}
 
-\begin{block}{Design Summary}
-\begin{itemize}
-    \item Five specialised crews.
-    \item Eight agents with distinct responsibilities.
-    \item Eight deterministic tools.
-    \item Conditional routing and independent
-    safety validation.
-\end{itemize}
-\end{block}
+\begin{columns}[T,onlytextwidth]
 
-\begin{block}{Task 2: Implementation}
+\begin{column}{0.49\textwidth}
+\begin{block}{Design Summary}
+\small
 \begin{itemize}
-    \item Implement the final CrewAI structure.
-    \item Integrate custom conflict and
-    manoeuvre tools.
-    \item Implement Flow routers and retry rules.
-    \item Validate the system with test scenarios.
+    \item Five crews, including an independent Safety Validation crew.
+    \item Eight agents with distinct responsibilities.
+    \item Eight deterministic tools; two custom: conflict detection (T4) and manoeuvre calculation (T5).
+    \item Three routers; retry loop with $N = 2$.
 \end{itemize}
 \end{block}
+\end{column}
+
+\begin{column}{0.49\textwidth}
+\begin{block}{Open Questions for Task 2}
+\small
+\begin{itemize}
+    \item Process type per crew (sequential or hierarchical).
+    \item Pydantic outputs exchanged between crews.
+    \item Flow routers A--C and the retry loop.
+    \item Test scenarios covering every branch of the flow.
+\end{itemize}
+\end{block}
+\end{column}
+
+\end{columns}
 
 \vspace{0.2cm}
 
+{\footnotesize
+\textbf{Limitations:} simplified kinematics, no learning between runs,
+sector capacity left as future work.
+}
+
+\vspace{0.3cm}
+
 \centering
-\textbf{[Add the main design takeaway.]}
+\textbf{Tools compute, agents decide: nothing is cleared without independent validation.}
 
 \end{frame}

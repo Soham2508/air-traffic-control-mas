@@ -4,4 +4,294 @@
 % Guidance: inputs, crews table, flow figure (same TikZ as slide 3), routers A/B/C, design principle (roadmap 2.1-2.3).
 \section{System Overview}\label{sec:overview}
 
-\placeholder{To be written by Aram.}
+\subsection{Inputs}\label{sec:inputs}
+The system reads the three files required by the assignment:
+\begin{itemize}
+    \item \emph{Airspace} (GraphML): a directed graph whose nodes are waypoints, each with a latitude and a longitude, and whose edges are airway segments, each with its length in nautical miles.
+    \item \emph{Aircraft} (JSON): the identifier and the cruise speed (in knots) of each aircraft.
+    \item \emph{Flight plans} (JSON): for each aircraft, its route as a sequence of waypoints, its departure time and its cruise altitude.
+\end{itemize}
+The assignment allows additional information, and we add two extensions:
+\begin{itemize}
+    \item \emph{Aircraft performance limits}: aircraft type, minimum and maximum speed, and service ceiling. Without these limits the system cannot check whether a speed or altitude manoeuvre is feasible for a given aircraft.
+    \item An \emph{optional restrictions file} describing weather cells and closed waypoints or flight levels, each with a time window. If the file is absent, the system works exactly as with the three mandatory files.
+\end{itemize}
+
+\subsection{Crews and Flow}\label{sec:flow}
+The system has the four crews required by the assignment and one additional crew, Safety Validation \& QA, which independently re-checks every proposed manoeuvre. The choice of this crew is justified in Section~\ref{sec:agents}. Table~\ref{tab:crews} summarises the five crews. As the assignment recommends, each crew writes its result to an intermediate file. A crew can therefore be run and tested on its own, reading its input from the previous crew's file instead of re-running the whole pipeline.
+
+\begin{table}[H]
+\centering
+\caption{The five crews of the system}
+\label{tab:crews}
+\small
+\begin{tabularx}{\linewidth}{@{}l l X l@{}}
+\toprule
+\textbf{Crew} & \textbf{Agents} & \textbf{Responsibility} & \textbf{Output file (provisional)} \\
+\midrule
+1. Data Management          & 1--2 & Validate and normalise the input files                         & \texttt{normalized\_scenario.json} \\
+2. Surveillance \& Conflict & 3--4 & Build 4D trajectories; detect and characterise conflicts        & \texttt{conflicts.json} \\
+3. Tactical Resolution      & 5--6 & Propose a manoeuvre or a reroute for each conflict              & \texttt{resolutions.json} \\
+4. Safety Validation \& QA  & 7    & Re-check the amended plans against all traffic                 & \texttt{validation.json} \\
+5. Reporting                & 8    & Assign the final clearance statuses; write the ATC report      & \texttt{atc\_report.md} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+A CrewAI Flow coordinates the crews (Fig.~\ref{fig:flow}). Three routers take decisions based on the data produced so far:
+\begin{itemize}
+    \item \emph{Router A, inputs valid?} If validation fails, the flow skips the analysis and goes directly to Reporting, which reports the input as invalid. Invalid data is never reported as a conflict-free scenario.
+    \item \emph{Router B, conflicts found?} This is the routing rule required by the assignment. If at least one conflict is detected, the flow runs Tactical Resolution; otherwise it goes directly to Reporting.
+    \item \emph{Router C, validated?} If Safety Validation accepts every manoeuvre, the flow continues to Reporting. A rejected manoeuvre is sent back to Tactical Resolution together with the reason for rejection, with at most $N = 2$ planning attempts (that is, one retry). Flights still unresolved after the second attempt are reported as \textsc{not cleared}.
+\end{itemize}
+
+\begin{figure}[H]
+\centering
+\resizebox{\linewidth}{!}{%
+% Copied from slides/sections/03_overview.tex -- keep both in sync.
+\begin{tikzpicture}[
+    >=Stealth,
+    crew/.style={
+        draw=atcnavy,
+        fill=atclight,
+        rounded corners=3pt,
+        line width=0.9pt,
+        minimum width=2.55cm,
+        minimum height=0.90cm,
+        text width=2.35cm,
+        align=center,
+        font=\scriptsize\bfseries
+    },
+    decision/.style={
+        draw=atcamber,
+        fill=atcamber!12,
+        rounded corners=3pt,
+        line width=0.8pt,
+        minimum width=2.25cm,
+        minimum height=0.65cm,
+        text width=2.05cm,
+        align=center,
+        font=\scriptsize
+    },
+    process/.style={
+        ->,
+        draw=atcnavy,
+        line width=1pt
+    },
+    success/.style={
+        ->,
+        draw=green!50!black,
+        line width=1.1pt
+    },
+    exception/.style={
+        ->,
+        draw=red!70!black,
+        line width=1.1pt
+    },
+    retry/.style={
+        ->,
+        draw=atcamber!90!black,
+        dashed,
+        line width=1.2pt
+    },
+    lab/.style={
+        font=\scriptsize,
+        fill=white,
+        inner sep=2pt
+    }
+]
+
+% ==========================================
+% ROW 1: PROCESSING CREWS
+% ==========================================
+
+\node[
+    draw=atcslate,
+    fill=white,
+    rounded corners=3pt,
+    line width=0.8pt,
+    minimum height=0.90cm,
+    text width=1.9cm,
+    align=center,
+    font=\scriptsize
+] (inputs) at (-2.9,0)
+    {\textbf{Inputs}\\(GraphML + JSON)};
+
+\node[crew] (dm) at (0,0)
+    {1. Data\\Management};
+
+\node[crew] (sc) at (3.5,0)
+    {2. Surveillance\\\& Conflict};
+
+\node[crew] (tr) at (7.0,0)
+    {3. Tactical\\Resolution};
+
+\node[crew] (sv) at (10.5,0)
+    {4. Safety\\Validation \& QA};
+
+% ==========================================
+% ROW 2: DECISIONS
+% ==========================================
+
+\node[decision] (a) at (0,-1.8)
+    {A: Inputs valid?};
+
+\node[decision] (b) at (3.5,-1.8)
+    {\shortstack{B: Conflicts\\found?}};
+
+\node[decision] (c) at (10.5,-1.8)
+    {C: Validated?};
+
+% ==========================================
+% ROW 3: SHARED REPORTING DESTINATION
+% ==========================================
+
+\node[
+    draw=atcnavy,
+    fill=atclight,
+    rounded corners=4pt,
+    line width=1pt,
+    minimum width=13.15cm,
+    minimum height=0.90cm,
+    align=center,
+    font=\small\bfseries
+] (report) at (5.25,-4.15)
+    {5. Reporting};
+
+% Explicit ports on the reporting bar
+\coordinate (rA) at (0,-3.70);
+\coordinate (rB) at (3.5,-3.70);
+\coordinate (rC) at (10.5,-3.70);
+\coordinate (rEnd) at (11.5,-3.70);
+
+% ==========================================
+% CREW -> DECISION
+% ==========================================
+
+\draw[process] (inputs.east) -- (dm.west);
+\draw[process] (dm.south) -- (a.north);
+\draw[process] (sc.south) -- (b.north);
+\draw[process] (sv.south) -- (c.north);
+
+% ==========================================
+% A: VALID INPUT -> SURVEILLANCE
+% ==========================================
+
+\draw[process]
+    (a.east) -- (1.75,-1.8)
+    -- (1.75,0)
+    -- (sc.west);
+
+\node[lab] at (1.30,-1.0) {Valid};
+
+% A: INVALID INPUT -> REPORTING
+\draw[exception]
+    (a.south) -- (rA);
+
+\node[
+    font=\scriptsize,
+    anchor=west,
+    fill=white
+] at (0.18,-2.85)
+    {Invalid input};
+
+% ==========================================
+% B: CONFLICT FOUND -> TACTICAL
+% ==========================================
+\draw[process]
+    (b.east) -- (5.25,-1.8)
+    -- (5.25,0)
+    -- (tr.west);
+    
+\node[
+    font=\scriptsize,
+    anchor=east,
+    align=center,
+    fill=white,
+    inner sep=2pt
+] at (5.20,-1.0)
+    {\shortstack{Conflict\\detected}};
+
+\draw[success]
+    (b.south) -- (rB);
+
+\node[
+    font=\scriptsize,
+    anchor=west,
+    fill=white
+] at (3.68,-2.85)
+    {No conflicts};
+
+% ==========================================
+% TACTICAL -> SAFETY VALIDATION
+% ==========================================
+
+\draw[process] (tr.east) -- (sv.west);
+
+% ==========================================
+% C: VALIDATED -> REPORTING
+% ==========================================
+
+\draw[success]
+    (c.south) -- (rC);
+
+\node[
+    font=\scriptsize,
+    anchor=east,
+    fill=white,
+    inner sep=2pt
+] at (10.25,-2.85)
+    {Validated};
+
+% ==========================================
+% C: REJECTED -> TACTICAL RETRY
+% ==========================================
+
+\draw[retry]
+    (c.east) -- (12.4,-1.8)
+    -- (12.4,1.15)
+    -- (7.0,1.15)
+    -- (tr.north);
+
+\node[lab] at (9.7,1.36)
+    {\textbf{Rejected}: retry if attempts $<N$};
+
+% ==========================================
+% C: RETRY LIMIT REACHED -> REPORTING
+% Separate right-hand port
+% ==========================================
+
+\draw[exception]
+    (c.east) -- (11.85,-1.8)
+    -- (11.85,-3.35)
+    -- (11.5,-3.35)
+    -- (rEnd);
+
+\node[
+    font=\scriptsize,
+    anchor=west,
+    fill=white,
+    inner sep=2pt
+] at (11.95,-2.85)
+    {\shortstack{Limit\\Reached}};
+
+% ==========================================
+% FINAL OUTPUT
+% ==========================================
+
+\node[
+    font=\scriptsize,
+    align=center
+] at (5.25,-4.95)
+    {Final clearance statuses and Markdown ATC report};
+
+\end{tikzpicture}%
+}
+\caption{System flow: five crews coordinated by three routers. The dashed arrow is the retry loop between Tactical Resolution and Safety Validation. The same diagram is used on slide~3 of the presentation.}
+\label{fig:flow}
+\end{figure}
+
+\subsection{Design Principle: Tools Compute, Agents Decide}\label{sec:principle}
+One principle runs through the whole design: \emph{every number that matters for safety is computed by a deterministic tool, while the LLM agents decide which tools to use and interpret and explain their results}. This covers distances, times, separations and the decision to accept or reject a manoeuvre. No agent estimates a distance or declares a manoeuvre safe based on its own judgement. The conflict-detection logic is based on the reference notebook provided with the assignment.
+
+We adopt this principle for three reasons. First, language models are unreliable at arithmetic, whereas checking separation is a precise geometric computation. Second, deterministic tools make the results reproducible and testable independently of the LLM. Third, it divides the work clearly between agents and tools. This division shapes both the tools assigned to each agent (Section~\ref{sec:agents}) and the classification of the agents in the taxonomy (Section~\ref{sec:taxonomy}).
