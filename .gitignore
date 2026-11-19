@@ -229,4 +229,4 @@ __marimo__/
 *.fdb_latexmk
 *.synctex.gz
 *.vrb
-docs/task1/slides/*.pdf
+docs/task1/**/*.pdf
