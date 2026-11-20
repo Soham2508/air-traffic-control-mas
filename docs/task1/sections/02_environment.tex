@@ -8,64 +8,68 @@ The Air Traffic Control Multi-Agent System (ATC-MAS) is designed for a
 It reads a GraphML airspace network and JSON aircraft and flight-plan data,
 validates them, and predicts aircraft trajectories to identify possible
 separation conflicts. The model uses horizontal and vertical separation
-thresholds of 5 nautical miles and 1{,}000 feet, respectively. We classify
+thresholds of 5 nautical miles and 1{,}000 feet, respectively \cite{icao4444}. We classify
 its environment using the five properties discussed in Lecture 2
-\cite{urvlect2,icao4444}.
+\cite{urvlect2,wooldridge2009}.
 
 \subsection{Environment Characteristics}
 
-\paragraph{Accessible versus inaccessible.}
+\paragraph{Accessible versus inaccessible}
 Real ATC is \emph{inaccessible}: surveillance can be noisy or incomplete,
-and pilot intentions cannot always be observed. Our \emph{modeled scenario}
+and pilot intentions cannot always be observed. Our \emph{modelled scenario}
 is classified as \emph{accessible}, because the simulation receives the
 scenario information required by its calculations. This does not imply
 that every agent has access to all data; individual crews may receive only
 the information needed to perform their roles.
 
-\paragraph{Deterministic versus non-deterministic.}
-Real ATC is \emph{non-deterministic}: weather, aircraft behavior and pilot
+\paragraph{Deterministic versus non-deterministic}
+Real ATC is \emph{non-deterministic}: weather, aircraft behaviour and pilot
 responses introduce uncertainty. The simulated trajectory and conflict
 calculations are \emph{deterministic} for the same valid inputs and fixed
 rules. Outputs proposed by language-model-based agents may still vary;
 such proposals should not be confused with the deterministic safety checks.
 
-\paragraph{Episodic versus non-episodic.}
+\paragraph{Episodic versus non-episodic}
 Real ATC is \emph{non-episodic}, since a clearance can affect later traffic
 situations and decisions. Our simulation is \emph{episodic across runs}:
 each submitted scenario is processed independently. It is
 \emph{non-episodic within a run}, because conflict findings and subsequent
 resolution decisions depend on earlier processing steps.
 
-\paragraph{Static versus dynamic.}
+\paragraph{Static versus dynamic}
 Real ATC is \emph{dynamic}, since aircraft keep moving and conditions
 change while decisions are made. The simulated scenario is \emph{static}
 with respect to external inputs during each batch run: no new live radar
 or weather observations arrive. This does not mean the model ignores
 motion; positions change along the trajectories being calculated.
 
-\paragraph{Discrete versus continuous.}
+\paragraph{Discrete versus continuous}
 Real aircraft movement is predominantly \emph{continuous}: position,
 time, altitude and speed vary continuously. Our simulation is
-\emph{hybrid and discretised by design}: graph routes and a proposed
-finite set of manoeuvre choices coexist with numerical trajectory
+\emph{hybrid and discretised by design}: graph routes and a finite set of manoeuvres coexist with numerical trajectory
 quantities. Candidate resolutions must still be assessed against the
 model's numerical separation constraints.
 
 \subsection{Implications for System Design}
 
-These characteristics motivate a separation of \emph{deterministic
-verification} from \emph{agent coordination}. Data Management validates
-the supplied files, and Surveillance and Conflict Detection calculates
-potential separation violations. Conflict-free scenarios can proceed to
-Reporting; scenarios with conflicts are intended to be routed to Tactical
-Resolution. The proposed Safety Validation and QA crew should independently
-check suggested manoeuvres, rejecting unsafe alternatives and allowing
-bounded retries before reporting the final status. In particular, an
-agent's suggested manoeuvre is not by itself proof that separation
-constraints are satisfied.
+These characteristics motivate a separation of deterministic verification
+from agent coordination. Data Management validates the supplied files,
+and Surveillance \& Conflict calculates potential separation violations.
+Conflict-free scenarios proceed to Reporting; scenarios with conflicts
+are routed to Tactical Resolution. The Safety Validation \& QA crew
+independently checks suggested manoeuvres, rejecting unsafe alternatives
+and allowing bounded retries before reporting the final status.
+
+Because the environment is accessible, deterministic and static during
+a run, the system can afford deliberative planning: as Lecture~2 notes,
+planning with an explicit model of the world can reach optimal solutions
+when the environment does not change while the plan is being
+made~\cite{urvlect2}. At the same time, the environment is non-episodic
+within a run: a manoeuvre that resolves one conflict can create another.
+This is why every proposed manoeuvre is re-checked by the independent
+Safety Validation \& QA crew before it is reported.
 
 The resulting design supports deliberative coordination without treating
 language-model output as a safety guarantee. This is an academic
-simulation, not a real-world clearance system. At the current development
-stage, deterministic detection is implemented; tactical manoeuvre planning
-and the full proposed safety-validation workflow are not yet complete.
+simulation, not a real-world clearance system.
+

@@ -1,25 +1,61 @@
 % Slide 4: Environment Analysis
 % Prepared for Task 1; uses packages and colour palette from slides/main.tex.
+
 \begin{frame}{Environment Analysis}
 \scriptsize
 \centering
-\renewcommand{\arraystretch}{1.20}
+
+\renewcommand{\arraystretch}{1.12}
+
 \resizebox{0.98\textwidth}{!}{%
-\begin{tabular}{p{3.1cm}p{3.1cm}p{3.3cm}p{3.8cm}}
+\begin{tabular}{
+>{\raggedright\arraybackslash}p{3.1cm}
+>{\raggedright\arraybackslash}p{3.1cm}
+>{\raggedright\arraybackslash}p{3.3cm}
+>{\raggedright\arraybackslash}p{3.8cm}
+}
 \toprule
-\textbf{Property} & \textbf{Real ATC} & \textbf{Our simulation} & \textbf{Justification} \\
+\textbf{Property} &
+\textbf{Real ATC} &
+\textbf{Our simulation} &
+\textbf{Justification} \\
 \midrule
-Accessible / inaccessible & Inaccessible & Accessible (modeled scenario) & Fixed, validated scenario inputs; individual crews may have local views. \\
-Deterministic / non-deterministic & Non-deterministic & Deterministic detection & Fixed trajectory calculations; LLM proposals can still vary. \\
-Episodic / non-episodic & Non-episodic & Episodic across runs; non-episodic within a run & Runs are independent; later decisions within a run use previous findings. \\
-Static / dynamic & Dynamic & Static external inputs & No live updates during a run; predicted aircraft positions still change. \\
-Discrete / continuous & Continuous & Hybrid / discretised by design & Continuous trajectory quantities; finite graph routes and proposed manoeuvres. \\
+
+Accessible / inaccessible &
+Inaccessible: radar noise, unknown pilot intent &
+Accessible (modelled scenario) &
+Fixed, validated scenario inputs; individual crews may have local views. \\
+
+Deterministic / non-deterministic &
+Non-deterministic: weather, pilot response &
+Deterministic detection &
+Fixed trajectory calculations; LLM proposals can still vary. \\
+
+Episodic / non-episodic &
+Non-episodic: decisions affect later traffic &
+Episodic across runs; non-episodic within a run &
+Runs are independent; later decisions within a run use previous findings. \\
+
+Static / dynamic &
+Dynamic: traffic keeps moving &
+Static external inputs &
+No live updates during a run; predicted aircraft positions still change. \\
+
+Discrete / continuous &
+Continuous: aircraft positions change over time &
+Hybrid / discretised by design &
+Continuous trajectory quantities; finite graph routes and manoeuvres. \\
+
 \bottomrule
 \end{tabular}%
 }
-\vspace{0.18cm}
+
+\vspace{0.12cm}
+
 \begin{block}{Design implications}
 \scriptsize
-Deterministic tools validate data and detect conflicts; agents coordinate proposed responses. Proposed manoeuvres require independent safety validation. This is an academic batch simulation, not operational ATC.
+Deterministic tools detect conflicts, agents coordinate responses, and
+every manoeuvre is independently validated.
 \end{block}
+
 \end{frame}
