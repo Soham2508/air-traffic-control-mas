@@ -13,7 +13,7 @@
 \setlength{\emergencystretch}{3em}
 \subsection{Resolution Strategy}\label{sec:resolution}
 
-This subsection describes the rules that the system follows from the moment a conflict is detected until each flight receives its final clearance status. Following the design principle of Section~\ref{sec:principle}, all distances, times and safety checks are computed by the deterministic tools T4, T5 and T7. The agents choose among the results returned by these tools and explain their choices. As a result, the same input always leads to the same resolution.
+This subsection describes the rules that the system follows from the moment a conflict is detected until each flight receives its final clearance status. Following the design principle of Section~\ref{sec:principle}, all distances, times and safety checks are computed by the deterministic tools T4, T5 and T7. The agents choose among the results returned by these tools and explain their choices. For the same input, the tools always return the same ranked list of candidates, and the agents can only choose from it.
 
 \subsubsection{Conflict Characterisation}\label{sec:conflict-characterisation}
 
@@ -28,7 +28,7 @@ Agent~4 (Conflict Detector) uses T4 to find every pair of aircraft in conflict. 
 \textbf{Geometry.} The geometry describes how the two aircraft meet. T4 computes the angle between their tracks at the CPA and, following the track categories of ICAO Doc~4444~\cite{icao4444}, classifies the conflict as:
 \begin{itemize}
     \item \emph{Same track:} the tracks differ by less than $45^\circ$;
-    \item \emph{Head-on:} the tracks differ by more than $135^\circ$;
+    \item \emph{Head-on (reciprocal track):} the tracks differ by more than $135^\circ$;
     \item \emph{Crossing:} all other cases.
 \end{itemize}
 Since every flight keeps one cruise altitude in our model, all conflicts happen at constant level, so no vertical classification is needed. The geometry helps Agent~5 understand which manoeuvres can work. In a head-on conflict along a single airway, a speed change or a short delay only moves the point where the aircraft meet. In a same-track or crossing conflict, a speed change or a delay can change the time at which each aircraft reaches the shared point.
@@ -103,7 +103,7 @@ Router~C then applies the following rule, with at most $N = 2$ planning attempts
 
 \subsubsection{Clearance Statuses}\label{sec:clearance-statuses}
 
-The design uses two levels of status. \emph{Manoeuvre statuses} are set by Agents~5 and~7. A manoeuvre can be \texttt{PROPOSED}, \texttt{VALIDATED}, \texttt{REJECTED} or \texttt{UNRESOLVED}, the same values as \texttt{ResolutionStatus} in the existing code. \emph{Flight clearance statuses} are set only by Agent~8 (ATC Reporter), which applies the rules of Table~\ref{tab:clearance} from top to bottom. The first rule that matches decides the status.
+The design uses two levels of status. \emph{Manoeuvre statuses} are set by Agents~5 and~7. A manoeuvre can be \texttt{PROPOSED}, \texttt{VALIDATED}, \texttt{REJECTED} or \texttt{UNRESOLVED}, matching the status values already defined in the code skeleton. \emph{Flight clearance statuses} are set only by Agent~8 (ATC Reporter), which applies the rules of Table~\ref{tab:clearance} from top to bottom. The first rule that matches decides the status.
 
 \begin{table}[H]
 \centering
