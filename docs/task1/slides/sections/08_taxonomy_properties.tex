@@ -1,10 +1,11 @@
 % Slide 8: Agent Taxonomy Properties
 % Rows identical for every agent are moved to a one-line note.
-% Levels match Table~\ref{tab:properties} of the report: high = \yes, medium = \partly, low = \no.
+% Levels match Table~\ref{tab:properties} of the report: high = \yes, medium = \partly, low = \low; \no{} is kept for properties an agent does not have.
 
 \newcommand{\yes}{\textcolor{atcgreen}{\ding{51}}}
 \newcommand{\partly}{\textcolor{atcamber}{$\sim$}}
 \newcommand{\no}{\textcolor{atcred}{\ding{55}}}
+\newcommand{\low}{\textcolor{atcred}{$\circ$}}
 \newcommand{\tbd}{\textcolor{atcslate}{?}}
 
 \begin{frame}{Agent Taxonomy: Properties}
@@ -19,13 +20,13 @@
 \textbf{Property} &
 A1 & A2 & A3 & A4 & A5 & A6 & A7 & A8 \\
 \midrule
-Flexibility    & \no & \no & \no & \partly & \yes & \partly & \partly & \no \\
-Reactivity     & \no & \no & \no & \no & \partly & \partly & \partly & \no \\
-Proactiveness  & \no & \no & \no & \partly & \yes & \partly & \partly & \no \\
-Social Ability & \no & \no & \no & \partly & \partly & \partly & \partly & \no \\
+Flexibility    & \low & \low & \low & \partly & \yes & \partly & \partly & \low \\
+Reactivity     & \low & \low & \low & \low & \partly & \partly & \partly & \low \\
+Proactiveness  & \low & \low & \low & \partly & \yes & \partly & \partly & \low \\
+Social Ability & \low & \low & \low & \partly & \partly & \partly & \partly & \low \\
 Rationality    & \yes & \yes & \yes & \yes & \yes & \yes & \yes & \yes \\
-Reasoning      & \no & \no & \no & \partly & \yes & \yes & \partly & \no \\
-Autonomy       & \no & \no & \no & \partly & \partly & \partly & \partly & \no \\
+Reasoning      & \low & \low & \low & \partly & \yes & \yes & \partly & \low \\
+Autonomy       & \low & \low & \low & \partly & \partly & \partly & \partly & \low \\
 Benevolence    & \yes & \yes & \yes & \yes & \yes & \yes & \yes & \yes \\
 Veracity       & \yes & \yes & \yes & \yes & \yes & \yes & \yes & \yes \\
 \bottomrule
@@ -34,7 +35,7 @@ Veracity       & \yes & \yes & \yes & \yes & \yes & \yes & \yes & \yes \\
 \vspace{0.25cm}
 
 {\footnotesize
-\yes{} high \quad \partly{} medium \quad \no{} low
+\yes{} high \quad \partly{} medium \quad \low{} low
 \qquad|\qquad
 \textbf{All agents:} no temporal continuity, no mobility, no learning.
 }

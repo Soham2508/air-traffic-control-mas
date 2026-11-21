@@ -49,15 +49,16 @@
 \vspace{0.05cm}
 
 \begin{block}{Agent 5: BDI-like Planning}
-\begin{itemize}
+\begin{itemize}\setlength{\itemsep}{0pt}
     \item Beliefs: trajectories, conflicts, aircraft limits
     \item Desires: conflict-free traffic, minimum deviation
-    \item Intentions: the chosen manoeuvres
+    \item Intentions: solve the highest-ranked conflict first
+    \item Plans: the chosen manoeuvres
 \end{itemize}
 \end{block}
 
 \centering
-\footnotesize
+\scriptsize
 Federated organisation: agents communicate through the Flow, not peer-to-peer.
 Agentification: notebook logic re-coded as a tool; CrewAI adapter as translator.
 
