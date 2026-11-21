@@ -2,7 +2,7 @@
 % No preamble here: only the section body. Packages and colours come from ../main.tex.
 \section{Agent Taxonomy}\label{sec:taxonomy}
 
-This section classifies the eight agents of Section~\ref{sec:agents} by their properties, their type by purpose and their architecture (reactive, deliberative or hybrid) \cite{wooldridge2009}. It also describes how existing code was turned into tools for the agents and how the system is organised. The agents are referred to as A1--A8: A1 Airspace Loader, A2 Flight Data Checker, A3 Aircraft Tracker, A4 Conflict Detector, A5 Flight Change Planner, A6 Route Planner, A7 Safety Checker and A8 ATC Reporter.
+This section classifies the eight agents of Section~\ref{sec:agents} using the taxonomy of Lecture~3 \cite{urvlect3} (agent properties and types by purpose) and the architectures of Lecture~2 \cite{urvlect2,wooldridge2009} (reactive, deliberative or hybrid). It also describes how existing code was turned into tools for the agents and how the system is organised. The agents are referred to as A1--A8: A1 Airspace Loader, A2 Flight Data Checker, A3 Aircraft Tracker, A4 Conflict Detector, A5 Flight Change Planner, A6 Route Planner, A7 Safety Checker and A8 ATC Reporter.
 
 \subsection{Agent Properties}\label{sec:properties}
 
@@ -10,6 +10,8 @@ Table~\ref{tab:properties} gives the level of each property for each agent. H, M
 
 \begin{table}[!t]
 \centering
+\caption{Properties of the eight agents in our system.}
+\label{tab:properties}
 \small
 \begin{tabular}{l*{8}{c}}
 \toprule
@@ -30,37 +32,37 @@ Benevolence             & H & H & H & H & H & H & H & H \\
 Veracity                & H & H & H & H & H & H & H & H \\
 \bottomrule
 \end{tabular}
-\caption{Properties of the eight agents in our system.}
-\label{tab:properties}
 \end{table}
 
 \begin{itemize}[leftmargin=*]
     \item \textbf{Flexibility.} A flexible agent is adaptive, proactive and social. A5 is the most flexible agent: when A7 rejects a manoeuvre, A5 receives the rejection reasons and adapts its proposal. A1--A3 and A8 follow a fixed procedure, so their flexibility is low.
     \item \textbf{Reactivity.} The environment is static (Section~\ref{sec:environment}), so there are no external changes to respond to during a run. The only changes are those caused by the agents themselves: A5 and A6 react to rejected manoeuvres, and A7 reacts to every amended plan. The remaining agents respond once to the output of the previous step.
-    \item \textbf{Proactiveness.} A5 shows goal-directed behaviour: it generates candidate manoeuvres and selects one in order to reach a conflict-free situation. A6 takes the initiative of searching for an alternative route when no other manoeuvre works. A4 goes beyond detection by ranking the conflicts. A1--A3 and A8 are driven only by their input.
+    \item \textbf{Proactiveness.} A5 shows goal-directed behaviour: it generates candidate manoeuvres and selects one in order to reach a conflict-free situation. A6 searches for an alternative route when A5 hands over a conflict that no other manoeuvre can solve. A4 goes beyond detection by ranking the conflicts. A1--A3 and A8 are driven only by their input.
     \item \textbf{Social ability.} The agents do not exchange messages in an agent communication language. They interact indirectly, through the state of the Flow and the intermediate files. The interaction is strongest between A5, A6 and A7, which cooperate in the resolution and validation loop, and A4, whose output decides whether the Tactical Resolution crew runs at all.
     \item \textbf{Rationality.} Every agent acts only to achieve its goal and never against it. In particular, no agent produces a numerical value without the corresponding tool (Section~\ref{sec:principle}).
     \item \textbf{Reasoning.} A5 and A6 have the highest reasoning capabilities, because they must make plans: A5 chooses which aircraft to manoeuvre and how, and A6 plans a new route in the airspace graph. A4 and A7 interpret the results of their tools (severity, ranking, reasons for rejection). A1--A3 and A8 apply their tools almost directly.
     \item \textbf{Learning.} No agent improves its performance over time. Each execution is independent and the agents do not use memory (Section~\ref{sec:conclusions}).
-    \item \textbf{Autonomy.} All agents work without commands from the user during the execution. However, their autonomy is limited on purpose: the agents can choose and validate manoeuvres, but they cannot issue a real clearance. The final decision remains with the human controller, which also addresses the legal and ethical issues of delegating decisions in a safety-critical domain.
+    \item \textbf{Autonomy.} All agents work without commands from the user during the execution. However, their autonomy is limited on purpose, which Lecture~3 calls \emph{autonomy limitations}: the agents can choose and validate manoeuvres, but they cannot issue a real clearance. The final decision remains with the human controller, which also addresses the legal and ethical issues of delegating decisions in a safety-critical domain.
     \item \textbf{Temporal continuity.} None. The system is not a set of continuously running processes: it receives one input, produces one report and terminates.
     \item \textbf{Mobility.} None. All agents are executed in the same machine.
     \item \textbf{Other properties.} All agents are benevolent, since they always try to do what is asked of them and share a single goal. All agents have veracity: A7 and A8 never report a conflict as resolved unless the manoeuvre has been marked as \texttt{VALIDATED}, and A8 never changes a value computed by a tool. Character and emotion are not relevant in this system.
 \end{itemize}
 
-\textbf{Relationships between properties.} The levels in Table~\ref{tab:properties} are consistent with each other. \emph{More reasoning implies more rationality and more proactivity}: A5 and A6, which have the highest reasoning level, are also the most proactive agents. \emph{Less autonomy implies less proactivity}: since autonomy is bounded, no agent can take initiatives outside its task. Finally, as there is no learning, flexibility and autonomy remain moderate.
+\textbf{Relationships between properties.} The levels in Table~\ref{tab:properties} are consistent with the relationships between properties described in Lecture~3 \cite{urvlect3}. \emph{More reasoning implies more rationality and more proactivity}: A5 and A6, which have the highest reasoning level, are also the most proactive agents. \emph{Less autonomy implies less proactivity}: since autonomy is bounded, no agent can take initiatives outside its task. Finally, as there is no learning, flexibility and autonomy remain moderate.
 
 \subsection{Agent Types by Purpose}\label{sec:types}
 
 \begin{itemize}[leftmargin=*]
     \item \textbf{Information agents (A1, A2 and A3).} They manage the access to heterogeneous information sources (one GraphML file and two JSON files), and they retrieve, validate and fuse that information for the other agents.
     \item \textbf{Information and collaborative agent (A4).} It monitors the traffic like an information agent, but its output determines the work of the following crews, so it is also close to a collaborative agent.
-    \item \textbf{Collaborative agents (A5, A6 and A7).} They cooperate to solve a problem that is too large for a single agent: A5 and A6 propose manoeuvres and A7 validates them, with a feedback loop between them. Air-traffic control is a naturally distributed problem, which makes it a good fit for collaborative agents.
+    \item \textbf{Collaborative agents (A5, A6 and A7).} They cooperate to solve a problem that is too large for a single agent: A5 and A6 propose manoeuvres and A7 validates them, with a feedback loop between them. Lecture~3 lists air-traffic control as an application of collaborative agents \cite{urvlect3}, since it is a naturally distributed problem.
     \item \textbf{Interface agent (A8).} It is the agent that presents the results to the human controller. It is only partially an interface agent, because it does not learn the preferences of the user.
     \item \textbf{Facilitator agents.} There is no facilitator agent in the system. The communication between crews is managed by the CrewAI Flow, which is not an agent.
 \end{itemize}
 
 \subsection{Agent Architectures}\label{sec:architectures}
+
+Following Lecture~2 \cite{urvlect2}, each agent is classified as reactive, deliberative or hybrid.
 
 \begin{itemize}[leftmargin=*]
     \item \textbf{Reactive (A1, A2, A3, A7 and A8).} Their behaviour is close to situation--action rules, without planning: valid or invalid input (A1, A2), flight plans to trajectories (A3), \texttt{VALIDATED} or \texttt{REJECTED} (A7), and final status to report (A8).
@@ -68,7 +70,7 @@ Veracity                & H & H & H & H & H & H & H & H \\
     \item \textbf{Hybrid (A4).} It combines a reactive part, the separation rule of 5~NM and 1000~ft \cite{icao4444}, with a deliberative part, the characterisation and ranking of the conflicts.
 \end{itemize}
 
-A5 can be described with the belief--desire--intention (BDI) model:
+A5 can be described with the belief--desire--intention (BDI) model of Lecture~2 \cite{urvlect2}:
 \begin{itemize}[leftmargin=*]
     \item \textit{Beliefs:} the 4D trajectories, the detected conflicts and the limits of each aircraft.
     \item \textit{Desires:} no conflicts and no changes to the original flight plans.
@@ -82,6 +84,6 @@ At the level of implementation, every agent is an LLM that decides and explains,
 
 \subsection{Agentification and System Organisation}\label{sec:agentification}
 
-The conflict detection code was provided as a Jupyter Notebook, which is not an agent. Two agentification mechanisms were used. First, the detection logic was \textbf{re-coded} as a Python module (\texttt{tools/conflict\_detection.py}). Second, a CrewAI \texttt{BaseTool} adapter (\texttt{tools/crewai\_tools.py}) acts as a \textbf{translator} between the agents and that module: it only needs the inputs and outputs of the code, which is not modified. No wrapper was needed.
+The conflict detection code was provided as a Jupyter Notebook, which is not an agent. Lecture~3 \cite{urvlect3} describes three agentification mechanisms: translator, wrapper and re-code. Two of them were used. First, the detection logic was \textbf{re-coded} as a Python module (\url{tools/conflict_detection.py}). Second, a CrewAI \texttt{BaseTool} adapter (\url{tools/crewai_tools.py}) acts as a \textbf{translator} between the agents and that module: it only needs the inputs and outputs of the code, which is not modified. No wrapper was needed.
 
 Regarding the organisation, the system is \textbf{federated} rather than flat. The agents of different crews do not communicate directly with each other: all the communication goes through the Flow state and the intermediate files.
