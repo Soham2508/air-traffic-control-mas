@@ -84,6 +84,6 @@ At the level of implementation, every agent is an LLM that decides and explains,
 
 \subsection{Agentification and System Organisation}\label{sec:agentification}
 
-The conflict detection code was provided as a Jupyter Notebook, which is not an agent. Lecture~3 \cite{urvlect3} describes three agentification mechanisms: translator, wrapper and re-code. Two of them were used. First, the detection logic was \textbf{re-coded} as a Python module (\url{tools/conflict_detection.py}). Second, a CrewAI \texttt{BaseTool} adapter (\url{tools/crewai_tools.py}) acts as a \textbf{translator} between the agents and that module: it only needs the inputs and outputs of the code, which is not modified. No wrapper was needed.
+The baseline conflict detection code is not an agent. Lecture~3 \cite{urvlect3} describes three agentification mechanisms: translator, wrapper and re-code. Two of them were used. First, the detection logic was \textbf{re-coded} as a Python module (\url{tools/conflict_detection.py}). Second, a CrewAI \texttt{BaseTool} adapter (\url{tools/crewai_tools.py}) acts as a \textbf{translator} between the agents and that module: it only needs the inputs and outputs of the code, which is not modified. No wrapper was needed.
 
 Regarding the organisation, the system is \textbf{federated} rather than flat. The agents of different crews do not communicate directly with each other: all the communication goes through the Flow state and the intermediate files.

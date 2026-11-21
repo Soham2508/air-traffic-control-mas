@@ -10,7 +10,7 @@ In keeping with the design principle of Section~\ref{sec:principle} (\emph{tools
 
 \subsubsection{Tool Specifications}\label{sec:tool-specs}
 
-Table~\ref{tab:tools} summarises the eight deterministic tools (\texttt{T1}--\texttt{T8}) across the five crews of Section~\ref{sec:agents}, including their owning agents, data contracts, and determinism guarantees. The assignment mandates custom tools for conflict detection and safe resolution manoeuvre calculation; in our architecture these correspond to \texttt{T4} (\texttt{ConflictDetectionTool}) and \texttt{T5} (\texttt{ManeuverCalculationTool}).
+Table~\ref{tab:tools} summarises the eight deterministic tools (\texttt{T1}--\texttt{T8}) across the five crews of Section~\ref{sec:agents}, including their owning agents, data contracts, and determinism guarantees. We implement custom tools for conflict detection and safe resolution manoeuvre calculation; in our architecture these correspond to \texttt{T4} (\texttt{ConflictDetectionTool}) and \texttt{T5} (\texttt{ManeuverCalculationTool}).
 
 \begin{table}[H]
 \centering
@@ -88,7 +88,7 @@ Table~\ref{tab:agent-tool-matrix} maps the eight agents across all five crews to
 
 \subsubsection{Extended Input Schemas}\label{sec:input-schemas}
 
-As introduced in Section~\ref{sec:inputs}, the baseline assignment dataset specifies only \texttt{id} and \texttt{speed\_kt} for each aircraft, which is insufficient to check whether a candidate speed or flight-level manoeuvre is physically achievable. We therefore extend the aircraft JSON schema with four performance fields (Table~\ref{tab:aircraft-schema}) and define an optional \texttt{restrictions.json} schema (Table~\ref{tab:restrictions-schema}) for weather cells and closed airspace elements.
+As introduced in Section~\ref{sec:inputs}, the baseline dataset specifies only \texttt{id} and \texttt{speed\_kt} for each aircraft, which is insufficient to check whether a candidate speed or flight-level manoeuvre is physically achievable. We therefore extend the aircraft JSON schema with four performance fields (Table~\ref{tab:aircraft-schema}) and define an optional \texttt{restrictions.json} schema (Table~\ref{tab:restrictions-schema}) for weather cells and closed airspace elements.
 
 \begin{table}[H]
 \centering
@@ -130,5 +130,5 @@ As introduced in Section~\ref{sec:inputs}, the baseline assignment dataset speci
 \end{tabularx}
 \end{table}
 
-Both extensions preserve full compatibility with the assignment's mandatory inputs: if \texttt{restrictions.json} is omitted, \texttt{T7} skips airspace-restriction checks and still validates separation and aircraft performance limits across the three mandatory input files.
+Both extensions preserve full compatibility with the baseline inputs: if \texttt{restrictions.json} is omitted, \texttt{T7} skips airspace-restriction checks and still validates separation and aircraft performance limits across the three core input files.
 \endgroup
