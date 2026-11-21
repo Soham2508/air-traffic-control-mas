@@ -1,7 +1,150 @@
 % Owner: luisdavidantonio
-% No preamble here: only the section body. Packages and colours come from ../main.tex.
-% Cite sources with keys from ../refs.bib (e.g. \cite{urvlect2}).
-% Guidance: conflict characterisation criteria, manoeuvre catalogue and preference order, clearance statuses, retry rule (roadmap section 6).
+% Guidance: conflict characterisation criteria, maneuvre catalogue and preference order, clearance statuses, retry rule (roadmap section 6).
+
+% Task notes:
+%  * T4 must add t_LoS (entry/exit), track-angle difference, geometry
+%    class and severity to the Conflict model; today it returns CPA only.
+%  * T5 needs two modes: "generate" (catalogue) and "evaluate" (score a
+%    plan supplied by Agent 6), so reroutes get the same checks.
+%  * Maneuvre statuses reuse atc_mas.models.ResolutionStatus
+%    (PROPOSED / VALIDATED / REJECTED / UNRESOLVED).
+
+\begingroup
+\setlength{\emergencystretch}{3em}
 \subsection{Resolution Strategy}\label{sec:resolution}
 
-\placeholder{To be written by luisdavidantonio.}
+This subsection describes the rules that the system follows from the moment a conflict is detected until each flight receives its final clearance status. Following the design principle of Section~\ref{sec:principle}, all distances, times and safety checks are computed by the deterministic tools T4, T5 and T7. The agents choose among the results returned by these tools and explain their choices. For the same input, the tools always return the same ranked list of candidates, and the agents can only choose from it.
+
+\subsubsection{Conflict Characterisation}\label{sec:conflict-characterisation}
+
+Agent~4 (Conflict Detector) uses T4 to find every pair of aircraft in conflict. A conflict exists when both conditions are met at the same time: the horizontal distance is at most 5\,NM \emph{and} the vertical distance is at most 1000\,ft~\cite{icao4444}. For each conflict, T4 provides the following information:
+\begin{itemize}
+    \item \emph{Aircraft and segments:} the two aircraft involved and the route segment that each one is flying.
+    \item \emph{Closest point of approach (CPA):} the moment at which the two aircraft are horizontally closest, together with the horizontal and vertical distances at that moment.
+    \item \emph{Time to loss of separation:} the first moment at which both conditions are met, measured from the start of the scenario. The moment at which separation is restored is also recorded, so the duration of the conflict is known.
+    \item \emph{Geometry} and \emph{severity}, defined below.
+\end{itemize}
+
+\textbf{Geometry.} The geometry describes how the two aircraft meet. T4 computes the angle between their tracks at the CPA and, following the track categories of ICAO Doc~4444~\cite{icao4444}, classifies the conflict as:
+\begin{itemize}
+    \item \emph{Same track:} the tracks differ by less than $45^\circ$;
+    \item \emph{Head-on (reciprocal track):} the tracks differ by more than $135^\circ$;
+    \item \emph{Crossing:} all other cases.
+\end{itemize}
+Since every flight keeps one cruise altitude in our model, all conflicts happen at constant level, so no vertical classification is needed. The geometry helps Agent~5 understand which manoeuvres can work. In a head-on conflict along a single airway, a speed change or a short delay only moves the point where the aircraft meet. In a same-track or crossing conflict, a speed change or a delay can change the time at which each aircraft reaches the shared point.
+
+\textbf{Severity.} The severity measures how close the aircraft come compared with the separation minima. At the CPA, T4 divides the horizontal distance by 5\,NM and the vertical distance by 1000\,ft. Separation is restored as soon as one of these two ratios is greater than 1, so the larger of the two, $m$, shows how far the conflict is from being resolved:
+\begin{itemize}
+    \item \emph{High} ($m \le 0.5$): the aircraft come within half of both minima, that is, at most 2.5\,NM and 500\,ft;
+    \item \emph{Medium} ($0.5 < m \le 0.8$);
+    \item \emph{Low} ($0.8 < m \le 1$): the minima are only slightly infringed.
+\end{itemize}
+
+\textbf{Priority.} Agent~4 ranks the conflicts by severity first (high to low), then by the time to loss of separation (earliest first). Any remaining ties are broken by the aircraft identifiers, so the order is always reproducible. The Tactical Resolution crew handles the conflicts in this order. Among conflicts of equal severity, the earliest one comes first, because a manoeuvre also changes everything that happens later on that flight.
+
+\subsubsection{Manoeuvre Catalogue and Preference Order}\label{sec:manoeuvre-catalogue}
+
+Agent~5 (Flight Change Planner) and Agent~6 (Route Planner) can only propose the manoeuvres listed in Table~\ref{tab:manoeuvres}. They cannot invent other manoeuvres or other values.
+
+\begin{table}[H]
+\centering
+\caption{Manoeuvre catalogue, in order of preference}
+\label{tab:manoeuvres}
+\small
+\begin{tabularx}{\linewidth}{@{}c l l l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\textbf{Order} & \textbf{Manoeuvre} & \textbf{Values} & \textbf{Tool} & \textbf{Constraint} \\
+\midrule
+1 & Flight-level change & $\pm 1000$, $\pm 2000$\,ft & T5 & At or below the service ceiling; applies to the whole flight \\
+2 & Speed change        & $\pm 10$, $\pm 20$\,kt      & T5 & Between the aircraft's minimum and maximum speed \\
+3 & Departure delay     & $+60$, $+120$, $+300$\,s    & T5 & Delays only, never an earlier departure \\
+4 & Reroute             & alternative path            & T6 & Same origin and destination; avoids the conflict segment \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The order of preference reflects how much each manoeuvre changes the original flight plan:
+\begin{itemize}
+    \item \emph{Flight-level change.} The route and all the times stay the same. Enough vertical distance restores separation whatever the horizontal geometry, so this manoeuvre works for every type of conflict.
+    \item \emph{Speed change.} The route and the level stay the same, but the effect is small. At 480\,kt, slowing down by 20\,kt on a 30\,NM segment delays the arrival by only about 10\,s, which is less than 1.5\,NM. It mainly helps in same-track and crossing conflicts where the minima are only slightly infringed.
+    \item \emph{Departure delay.} Delaying an aircraft on the ground is the safest change, but it delays the whole flight. It is always possible, because in our batch scenario no flight has departed yet.
+    \item \emph{Reroute.} This is the largest change: new waypoints and usually a longer distance. It also depends on the airspace graph containing an alternative path. It is therefore the last resort, and it is handled by Agent~6.
+\end{itemize}
+
+\textbf{Selection procedure.} The Tactical Resolution crew handles the ranked conflicts one at a time:
+\begin{enumerate}
+    \item For the highest-ranked conflict, T5 builds every manoeuvre in the catalogue for both aircraft (up to 11 for each one). It applies each candidate to a copy of the flight plans and re-runs the same detection code as T4 against all the traffic.
+    \item T5 removes a candidate if the original conflict remains, if a new conflict appears, or if an aircraft limit is exceeded.
+    \item T5 sorts the remaining candidates by type (in the order of Table~\ref{tab:manoeuvres}), then by size (smallest first), then in a fixed direction order (climb before descent, slower before faster). If both aircraft have the same option, the aircraft that has not been changed yet is preferred, then the one with the later departure (first come, first served), and finally the one with the larger identifier.
+    \item Agent~5 selects a candidate from this list only. It takes the first one, unless it gives a reason for another choice, for example a rejection reason from a previous attempt.
+    \item If no candidate remains, Agent~5 passes the conflict to Agent~6, which looks for alternative routes with T6. Each route is then checked by T5 in the same way. If no route passes, the conflict is marked \texttt{UNRESOLVED}.
+    \item The selected manoeuvre is added to the flight plans with status \texttt{PROPOSED}. The list of conflicts is then recomputed, and the procedure repeats until only \texttt{UNRESOLVED} conflicts remain.
+\end{enumerate}
+A selected manoeuvre always removes its conflict and never creates a new one. Each step therefore closes at least one conflict, so the procedure always finishes, after at most as many steps as there were conflicts.
+
+\subsubsection{Validation and Retry Rule}\label{sec:retry-rule}
+
+Agent~7 (Safety Checker) re-runs T4 on the full set of modified flight plans and T7 on every modified flight. It marks each \texttt{PROPOSED} manoeuvre as \texttt{VALIDATED} or \texttt{REJECTED}. Each rejection carries one reason:
+\begin{itemize}
+    \item \texttt{SECONDARY\_CONFLICT}: the modified flight is in conflict with another aircraft;
+    \item \texttt{TARGET\_NOT\_RESOLVED}: the original conflict still exists;
+    \item \texttt{LIMIT\_VIOLATION}: an aircraft limit is exceeded;
+    \item \texttt{RESTRICTION\_VIOLATION}: a restricted area or flight level is used (only when the optional restrictions file is provided).
+\end{itemize}
+Since T5 has already filtered the candidates, rejections should be rare. They catch the cases that T5 cannot see: restricted airspace, and mistakes made by an LLM agent when it copies a manoeuvre into the flight plan. For this reason, the independent check of the Safety Validation \& QA crew is not redundant.
+
+Router~C then applies the following rule, with at most $N = 2$ planning attempts:
+\begin{itemize}
+    \item \emph{All manoeuvres validated:} the flow continues to Reporting.
+    \item \emph{Some manoeuvres rejected, first attempt:} the flow returns to Tactical Resolution with the rejected manoeuvres and their reasons. Validated manoeuvres are kept. Rejected ones are undone and cannot be proposed again for the same conflict.
+    \item \emph{Some manoeuvres rejected, second attempt:} the flow continues to Reporting, and the affected flights are marked \texttt{NOT CLEARED}.
+\end{itemize}
+\texttt{UNRESOLVED} conflicts are not sent back, because the catalogue and the airspace graph have already been fully explored and a retry would give the same answer. We chose $N = 2$, that is, one retry, because each attempt runs two crews and therefore adds LLM calls. With the rejection reasons and the excluded candidates, a single retry fixes the usual cause of a rejection, which is one unsuitable candidate. More attempts would rarely change the result. Since the loop runs at most $N$ times, the flow always terminates.
+
+\subsubsection{Clearance Statuses}\label{sec:clearance-statuses}
+
+The design uses two levels of status. \emph{Manoeuvre statuses} are set by Agents~5 and~7. A manoeuvre can be \texttt{PROPOSED}, \texttt{VALIDATED}, \texttt{REJECTED} or \texttt{UNRESOLVED}, matching the status values already defined in the code skeleton. \emph{Flight clearance statuses} are set only by Agent~8 (ATC Reporter), which applies the rules of Table~\ref{tab:clearance} from top to bottom. The first rule that matches decides the status.
+
+\begin{table}[H]
+\centering
+\caption{Flight clearance statuses, applied from top to bottom}
+\label{tab:clearance}
+\small
+\begin{tabularx}{\linewidth}{@{}l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\textbf{Status} & \textbf{Rule} \\
+\midrule
+\texttt{NOT CLEARED} & The input is invalid (Router~A). The traffic picture is then incomplete, so no flight can be guaranteed to be separated. A flight is also not cleared if it is part of an \texttt{UNRESOLVED} conflict, or if it still has a \texttt{REJECTED} manoeuvre after $N$ attempts. Both aircraft of an unresolved conflict are not cleared. \\
+\texttt{CLEARED WITH AMENDMENT} & The flight has at least one \texttt{VALIDATED} manoeuvre. The report states the change, for example FL300 $\rightarrow$ FL320. \\
+\texttt{CLEARED} & The flight plan is unchanged and the flight is not part of any remaining conflict. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Agent~8 never reports a conflict as resolved unless every manoeuvre behind it is \texttt{VALIDATED}, and it copies every number from the intermediate files without changing it.
+
+\subsubsection{Worked Example}\label{sec:worked-example}
+
+In the sample conflict scenario, aircraft AC1 flies from A to B and AC2 flies from B to A. Both fly at FL300 and 480\,kt and depart at the start of the scenario. T4 finds one conflict: the CPA is 112.5\,s after the start, with a horizontal and a vertical distance of 0. The conflict is head-on (the tracks differ by $180^\circ$) and its severity is high ($m = 0$). Table~\ref{tab:example} shows how T5 checks the candidates for AC2. The candidates for AC1 give the same results.
+
+\begin{table}[H]
+\centering
+\caption{T5 candidates for AC2 in the sample head-on conflict}
+\label{tab:example}
+\small
+\begin{tabularx}{\linewidth}{@{}l l >{\raggedright\arraybackslash}X@{}}
+\toprule
+\textbf{Candidate} & \textbf{Result} & \textbf{Reason} \\
+\midrule
+Flight level $\pm 1000$\,ft & Removed & The vertical distance is exactly 1000\,ft, which still counts as a conflict \\
+Flight level $\pm 2000$\,ft & Kept    & The vertical distance is 2000\,ft, so there is no conflict \\
+Speed $\pm 10$, $\pm 20$\,kt & Removed & The meeting point moves by at most 2.5\,s; the aircraft still meet \\
+Delay $+60$, $+120$\,s      & Removed & AC1 is still on the airway when AC2 departs \\
+Delay $+300$\,s             & Kept    & AC1 reaches B after 225\,s, before AC2 departs \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The first candidate is a climb from FL300 to FL320. Both aircraft have the same options and the same departure time, so the aircraft with the larger identifier, AC2, is changed. Agent~7 marks the manoeuvre as \texttt{VALIDATED}, provided that the service ceiling of AC2 is at least 32{,}000\,ft. Agent~8 then reports AC1 as \texttt{CLEARED} and AC2 as \texttt{CLEARED WITH AMENDMENT}.
+
+The example also shows an effect of including the limit in the conflict definition (at most 1000\,ft). Changing one flight level from a shared level leaves exactly 1000\,ft between the aircraft, which still counts as a conflict, so T5 removes this candidate.

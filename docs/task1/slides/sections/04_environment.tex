@@ -1,56 +1,61 @@
 % Slide 4: Environment Analysis
-% Property names follow Lecture 2 (Russell & Norvig dichotomies).
-% Main argument: contrast between real ATC and our simulation.
+% Prepared for Task 1; uses packages and colour palette from slides/main.tex.
 
 \begin{frame}{Environment Analysis}
-
 \scriptsize
-
-\begin{table}
 \centering
-\renewcommand{\arraystretch}{1.15}
-\begin{tabular}{*{4}{>{\raggedright\arraybackslash}p{3.3cm}}}
+
+\renewcommand{\arraystretch}{1.12}
+
+\resizebox{0.98\textwidth}{!}{%
+\begin{tabular}{
+>{\raggedright\arraybackslash}p{3.1cm}
+>{\raggedright\arraybackslash}p{3.1cm}
+>{\raggedright\arraybackslash}p{3.3cm}
+>{\raggedright\arraybackslash}p{3.8cm}
+}
 \toprule
 \textbf{Property} &
 \textbf{Real ATC} &
-\textbf{Our Simulation} &
+\textbf{Our simulation} &
 \textbf{Justification} \\
 \midrule
 
 Accessible / inaccessible &
 Inaccessible: radar noise, unknown pilot intent &
-Accessible &
-[Complete scenario inputs; agent-local views.] \\
+Accessible (modelled scenario) &
+Fixed, validated scenario inputs; individual crews may have local views. \\
 
 Deterministic / non-deterministic &
 Non-deterministic: weather, pilot response &
-Deterministic &
-[Fixed simulation rules; distinguish LLM variability.] \\
+Deterministic detection &
+Fixed trajectory calculations; LLM proposals can still vary. \\
 
 Episodic / non-episodic &
-Non-episodic &
-Episodic across runs, non-episodic within a run &
-[Independent runs; dependent actions within a run.] \\
+Non-episodic: decisions affect later traffic &
+Episodic across runs; non-episodic within a run &
+Runs are independent; later decisions within a run use previous findings. \\
 
 Static / dynamic &
 Dynamic: traffic keeps moving &
-Static &
-[No new real-time inputs during execution.] \\
+Static external inputs &
+No live updates during a run; predicted aircraft positions still change. \\
 
 Discrete / continuous &
-Continuous &
-Hybrid: discretised by design &
-[Continuous quantities; finite manoeuvre catalogue.] \\
+Continuous: aircraft positions change over time &
+Hybrid / discretised by design &
+Continuous trajectory quantities; finite graph routes and manoeuvres. \\
 
 \bottomrule
-\end{tabular}
-\end{table}
+\end{tabular}%
+}
 
-\vspace{0.1cm}
+\vspace{0.12cm}
 
-\begin{block}{Design Implication}
-    [Explain why deliberative planning and
-    independent safety validation are appropriate.]
+\begin{block}{Design implications}
+\scriptsize
+Deterministic tools detect conflicts, agents coordinate responses, and
+every manoeuvre is independently validated.
 \end{block}
 
 \end{frame}
