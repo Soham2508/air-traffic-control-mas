@@ -32,13 +32,13 @@
 \begin{block}{Architectures}
 \begin{itemize}
     \item Reactive:
-    [Agents and rationale]
+    A1, A2, A3, A7, A8 (situation--action)
 
     \item Deliberative:
-    [Agents and rationale]
+    A5, A6 (world model + planning)
 
     \item Hybrid:
-    [Agents and rationale]
+    A4 (separation rule + ranking)
 \end{itemize}
 \end{block}
 
@@ -46,19 +46,20 @@
 
 \end{columns}
 
-\vspace{0.2cm}
+\vspace{0.05cm}
 
 \begin{block}{Agent 5: BDI-like Planning}
-\begin{itemize}
-    \item Beliefs: [State information]
-    \item Desires: [Desired outcome]
-    \item Intentions: [Selected actions]
+\begin{itemize}\setlength{\itemsep}{0pt}
+    \item Beliefs: trajectories, conflicts, aircraft limits
+    \item Desires: conflict-free traffic, minimum deviation
+    \item Intentions: solve the highest-ranked conflict first
+    \item Plans: the chosen manoeuvres
 \end{itemize}
 \end{block}
 
 \centering
-\footnotesize
-[Briefly mention federated organisation
-and agentification.]
+\scriptsize
+Federated organisation: agents communicate through the Flow, not peer-to-peer.
+Agentification: notebook logic re-coded as a tool; CrewAI adapter as translator.
 
 \end{frame}
