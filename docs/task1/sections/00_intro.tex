@@ -16,9 +16,9 @@ The aim of this work is to design a multi-agent system (MAS) that performs this 
 
 \textbf{Why a multi-agent system?} The problem splits naturally into distinct kinds of expertise, much as a real control centre does: data handling, surveillance, tactical planning, independent safety checking and reporting. Each of these is assigned to a crew of specialised agents that cooperate through a shared flow. Collaborative agents are suited to problems that are physically distributed and need several specialists to cooperate, and air-traffic control is one of the standard examples~\cite{urvlect3}. Our design also keeps the agent that plans a manoeuvre separate from the agent that certifies it, a separation of duties that is common in safety-critical operations.
 
-\textbf{Scope and Assumptions:} The system is an academic simulation, not an operational tool. Thus we make the following simplifying assumptions:
+\textbf{Scope and assumptions:} The system is an academic simulation, not an operational tool. Thus, we make the following simplifying assumptions:
 \begin{itemize}
-    \item \emph{Batch processing.} All information is available at the start. The system analyses, reports and terminates; no new information arrives during execution.
+    \item \emph{Batch processing.} All information is available at the start. The system analyses it, reports and terminates; no new information arrives during execution.
     \item \emph{Simplified kinematics.} Aircraft fly straight legs between waypoints at constant speed and at their cruise altitude. Wind is not modelled.
     \item \emph{No real clearances.} Statuses such as \textsc{cleared} are outputs of the simulation, not instructions to pilots.
     \item \emph{Design over output quality.} The quality of the language-model output depends on the LLM used. The design therefore assigns every safety-relevant computation to deterministic tools rather than to the agents' own reasoning.

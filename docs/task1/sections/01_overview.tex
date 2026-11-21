@@ -11,7 +11,7 @@ The system reads the three files required by the assignment:
     \item \emph{Aircraft} (JSON): the identifier and the cruise speed (in knots) of each aircraft.
     \item \emph{Flight plans} (JSON): for each aircraft, its route as a sequence of waypoints, its departure time and its cruise altitude.
 \end{itemize}
-The assignment allows additional information, and we add two extensions:
+We also add two extensions:
 \begin{itemize}
     \item \emph{Aircraft performance limits}: aircraft type, minimum and maximum speed, and service ceiling. Without these limits the system cannot check whether a speed or altitude manoeuvre is feasible for a given aircraft.
     \item An \emph{optional restrictions file} describing weather cells and closed waypoints or flight levels, each with a time window. If the file is absent, the system works exactly as with the three mandatory files.
@@ -294,4 +294,4 @@ A CrewAI Flow coordinates the crews (Fig.~\ref{fig:flow}). Three routers take de
 \subsection{Design Principle: Tools Compute, Agents Decide}\label{sec:principle}
 One principle runs through the whole design: \emph{every number that matters for safety is computed by a deterministic tool, while the LLM agents decide which tools to use and interpret and explain their results}. This covers distances, times, separations and the decision to accept or reject a manoeuvre. No agent estimates a distance or declares a manoeuvre safe based on its own judgement.
 
-We adopt this principle for three reasons. First, language models are unreliable at arithmetic computation. Second, deterministic tools make the results reproducible and testable independently of the LLM. Third, it divides the work clearly between agents and tools. This division shapes both the tools assigned to each agent (Section~\ref{sec:agents}) and the classification of the agents in the taxonomy (Section~\ref{sec:taxonomy}).
+We adopt this principle for three reasons. First, language models are unreliable at arithmetic, whereas checking separation is a precise geometric computation. Second, deterministic tools make the results reproducible and testable independently of the LLM. Third, it divides the work clearly between agents and tools. This division shapes both the tools assigned to each agent (Section~\ref{sec:agents}) and the classification of the agents in the taxonomy (Section~\ref{sec:taxonomy}).

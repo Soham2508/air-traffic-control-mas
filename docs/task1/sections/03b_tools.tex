@@ -57,7 +57,7 @@ All intermediate JSON artefacts $\rightarrow$ clearance statuses and Markdown re
     \item \textbf{\texttt{T3 -- TrajectoryExtrapolatorTool} (Agent~3):} Projects waypoint coordinates onto a local equirectangular plane centred on the mean latitude and longitude of the airspace nodes and computes piecewise-linear 4D trajectories $(x(t), y(t), z(t))$ assuming constant cruise speed and altitude per leg.
     \item \textbf{\texttt{T6 -- AirspaceGraphRoutingTool} (Agent~6):} Searches the directed GraphML network for alternative origin-to-destination waypoint paths avoiding the conflicting airway segment whenever \texttt{T5} finds no feasible altitude, speed, or delay manoeuvre. Candidate routes are passed back through \texttt{T5} (\emph{evaluate} mode) before selection.
     \item \textbf{\texttt{T7 -- ConstraintCheckerTool} (Agent~7):} Independently verifies every amended flight plan against aircraft performance limits (speed bounds and service ceiling) and, when provided, active airspace or weather restrictions. Combined with \texttt{T4}'s full-traffic re-check, \texttt{T7} produces \texttt{VALIDATED} or \texttt{REJECTED} verdicts in \texttt{validation.json} using explicit reason codes (\texttt{SECONDARY\_CONFLICT}, \texttt{TARGET\_NOT\_RESOLVED}, \texttt{LIMIT\_VIOLATION}, or \texttt{RESTRICTION\_VIOLATION}).
-    \item \textbf{\texttt{T8 -- MarkdownReportRendererTool} (Agent~8):} Reads the validated intermediate JSON artefacts (Table~\ref{tab:crews}), assigns flight clearance statuses (\texttt{CLEARED}, \texttt{CLEARED WITH AMENDMENT}, or \texttt{NOT CLEARED}) strictly from the rules in Section~\ref{sec:resolution}, and renders the deterministic Markdown report \texttt{atc\_report.md}. Agent~8 may add explanatory narrative, but \texttt{T8} prevents any LLM modification of computed numbers or statuses.
+    \item \textbf{\texttt{T8 -- MarkdownReportRendererTool} (Agent~8):} Reads the validated intermediate JSON artefacts (Table~\ref{tab:crews}) and renders the deterministic Markdown report \texttt{atc\_report.md}. Agent~8 assigns the flight clearance statuses (\texttt{CLEARED}, \texttt{CLEARED WITH AMENDMENT}, or \texttt{NOT CLEARED}) using \texttt{T8}, which applies the rules of Table~\ref{tab:clearance} deterministically. Agent~8 may add explanatory narrative, but \texttt{T8} prevents any LLM modification of computed numbers or statuses.
 \end{itemize}
 
 \subsubsection{Agent--Tool Matrix}\label{sec:agent-tool-matrix}
@@ -105,7 +105,7 @@ As introduced in Section~\ref{sec:inputs}, the baseline assignment dataset speci
 \texttt{type}               & string          & Yes & Aircraft type designator, e.g.\ \texttt{A320} (\texttt{T2}, \texttt{T8}) \\
 \texttt{min\_speed\_kt}     & float (\texttt{kt}) & Yes & $> 0$ and $\le \texttt{speed\_kt}$ (\texttt{T2}, \texttt{T5}, \texttt{T7}) \\
 \texttt{max\_speed\_kt}     & float (\texttt{kt}) & Yes & $\ge \texttt{speed\_kt}$ (\texttt{T2}, \texttt{T5}, \texttt{T7}) \\
-\texttt{service\_ceiling\_ft} & float (\texttt{ft}) & Yes & $> 0$; maximum permitted flight level (\texttt{T2}, \texttt{T5}, \texttt{T7}) \\
+\texttt{service\_ceiling\_ft} & float (\texttt{ft}) & Yes & $> 0$; maximum altitude the aircraft can fly (\texttt{ft}) (\texttt{T2}, \texttt{T5}, \texttt{T7}) \\
 \bottomrule
 \end{tabularx}
 \end{table}
