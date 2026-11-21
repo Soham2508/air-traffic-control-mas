@@ -1,0 +1,36 @@
+name: Report & Slides LaTeX CI
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'docs/task1/**/*.tex'
+      - 'docs/task1/**/*.bib'
+      - '.github/workflows/report-ci.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'docs/task1/**/*.tex'
+      - 'docs/task1/**/*.bib'
+      - '.github/workflows/report-ci.yml'
+
+jobs:
+  compile-latex:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Compile Task 1 Report (PDF)
+        uses: xu-cheng/latex-action@v3
+        with:
+          root_file: main.tex
+          working_directory: docs/task1
+          args: -pdf -interaction=nonstopmode -halt-on-error
+
+      - name: Compile Task 1 Slides (PDF)
+        uses: xu-cheng/latex-action@v3
+        with:
+          root_file: main.tex
+          working_directory: docs/task1/slides
+          args: -pdf -interaction=nonstopmode -halt-on-error
