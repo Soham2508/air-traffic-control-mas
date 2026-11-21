@@ -2,6 +2,133 @@
 % No preamble here: only the section body. Packages and colours come from ../main.tex.
 % Cite sources with keys from ../refs.bib (e.g. \cite{urvlect2}).
 % Guidance: spec of tools T1-T8, T4 and T5 marked as required custom tools, agent-tool matrix (roadmap 2.2).
+\begingroup
+\setlength{\emergencystretch}{3em}
 \subsection{Tools and Agent--Tool Matrix}\label{sec:tools}
 
-\placeholder{To be written by Soham2508.}
+In keeping with the design principle of Section~\ref{sec:principle} (\emph{tools compute, agents decide}), every safety-relevant computation in ATC-MAS is delegated to a deterministic Python tool exposed to the agents through CrewAI's \texttt{BaseTool} interface~\cite{crewai} with typed Pydantic schemas. Agents never perform mental arithmetic, estimate separations, or certify plans from language-model reasoning alone; instead, they invoke the assigned tools, interpret the structured outputs, and record justified decisions.
+
+\subsubsection{Tool Specifications}\label{sec:tool-specs}
+
+Table~\ref{tab:tools} summarises the eight deterministic tools (\texttt{T1}--\texttt{T8}) across the five crews of Section~\ref{sec:agents}, including their owning agents, data contracts, and determinism guarantees. The assignment mandates custom tools for conflict detection and safe resolution manoeuvre calculation; in our architecture these correspond to \texttt{T4} (\texttt{ConflictDetectionTool}) and \texttt{T5} (\texttt{ManeuverCalculationTool}).
+
+\begin{table}[H]
+\centering
+\caption{Summary of deterministic tools (\texttt{T1}--\texttt{T8})}
+\label{tab:tools}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\linewidth}{@{}l l l >{\raggedright\arraybackslash}X c@{}}
+\toprule
+\textbf{ID} & \textbf{Tool} & \textbf{Agent(s)} & \textbf{Inputs $\rightarrow$ Outputs} & \textbf{Det.} \\
+\midrule
+\texttt{T1} & \texttt{AirspaceGraphLoaderTool} & A1 &
+GraphML airspace $\rightarrow$ validated directed graph (waypoints, airway edges, distances) + structural issues & Yes \\
+\texttt{T2} & \texttt{FlightDataNormalizerTool} & A2 &
+Aircraft \& flight-plan JSON + graph $\rightarrow$ normalised Pydantic scenario (\texttt{normalized\_scenario.json}) or \texttt{INVALID\_INPUT} issues & Yes \\
+\texttt{T3} & \texttt{TrajectoryExtrapolatorTool} & A3 &
+Normalised scenario $\rightarrow$ piecewise-linear 4D trajectories $(x(t),y(t),z(t))$ & Yes \\
+\textbf{\texttt{T4*}} & \textbf{\texttt{ConflictDetectionTool}} & A4, A7 &
+4D trajectories + separation minima $\rightarrow$ ranked conflicts with CPA, $t_{\text{LoS}}$, geometry, and severity (\texttt{conflicts.json}) & Yes \\
+\textbf{\texttt{T5*}} & \textbf{\texttt{ManeuverCalculationTool}} & A5 &
+Conflict + traffic + aircraft limits (or A6 reroute) $\rightarrow$ filtered, ranked candidate manoeuvres (\texttt{resolutions.json}) & Yes \\
+\texttt{T6} & \texttt{AirspaceGraphRoutingTool} & A6 &
+Directed airspace graph + conflict segment $\rightarrow$ alternative origin-to-destination waypoint routes & Yes \\
+\texttt{T7} & \texttt{ConstraintCheckerTool} & A7 &
+Amended flight plans + aircraft limits + optional restrictions $\rightarrow$ constraint verdicts (\texttt{VALIDATED}/\texttt{REJECTED}) in \texttt{validation.json} & Yes \\
+\texttt{T8} & \texttt{MarkdownReportRendererTool} & A8 &
+All intermediate JSON artefacts $\rightarrow$ clearance statuses and Markdown report (\texttt{atc\_report.md}) & Yes \\
+\bottomrule
+\end{tabularx}
+\par\vspace{2pt}
+\raggedright\scriptsize\textit{*Custom tools (conflict detection and resolution manoeuvre calculation).}
+\end{table}
+
+\textbf{Custom Tools (\texttt{T4} and \texttt{T5}).} The two core tools encapsulate all geometric separation checks and manoeuvre searches:
+\begin{itemize}[leftmargin=*]
+    \item \textbf{\texttt{T4 -- ConflictDetectionTool} (Agents~4 and~7):} Enables deterministic pairwise trajectory comparison. For every pair of time-overlapping flight segments, it computes the closest point of approach (CPA) and flags a conflict whenever horizontal distance is at most $5\,\text{NM}$ \emph{and} vertical distance is at most $1{,}000\,\text{ft}$ at the same time~\cite{icao4444}. Beyond the baseline CPA coordinates and distances, \texttt{T4} outputs the loss-of-separation entry and exit timestamps ($t_{\text{LoS}}$ and duration), track-angle difference and encounter geometry (same track, head-on, or crossing), severity metric $m$, and a deterministic priority ordering saved to \texttt{conflicts.json} (Section~\ref{sec:resolution}). \texttt{T4} is shared by Agent~4 for initial detection and by Agent~7 for independent full-traffic re-checking.
+    \item \textbf{\texttt{T5 -- ManeuverCalculationTool} (Agent~5):} Serves as the deterministic tactical planning engine in two modes. In \emph{generate} mode, given a ranked conflict and all active flight plans, it enumerates the discrete manoeuvre catalogue (flight-level changes of $\pm 1{,}000$ or $\pm 2{,}000\,\text{ft}$, speed adjustments of $\pm 10$ or $\pm 20\,\text{kt}$, and departure delays of $+60$, $+120$, or $+300\,\text{s}$) for both conflicting aircraft, applies each candidate to a copy of the scenario, and evaluates it against aircraft limits and full-traffic separation using \texttt{T4}'s detection logic. Any candidate that fails to resolve the conflict, introduces a secondary conflict, or exceeds performance bounds is discarded; surviving candidates are ranked deterministically by preference order and tie-breaking rules (Section~\ref{sec:resolution}). In \emph{evaluate} mode, \texttt{T5} applies the exact same separation and limit checks to alternative waypoint routes proposed by Agent~6 (\texttt{T6}) before writing \texttt{resolutions.json}.
+\end{itemize}
+
+\textbf{Supporting Deterministic Tools (\texttt{T1}--\texttt{T3}, \texttt{T6}--\texttt{T8}).} The remaining six tools handle input preparation, trajectory projection, graph rerouting, independent constraint auditing, and final reporting:
+\begin{itemize}[leftmargin=*]
+    \item \textbf{\texttt{T1 -- AirspaceGraphLoaderTool} (Agent~1):} Parses the GraphML airspace file into a directed graph, verifies that every node carries finite \texttt{latitude} and \texttt{longitude} attributes and every directed edge carries a positive \texttt{distance\_nm}, and emits structured validation issues if the graph is malformed.
+    \item \textbf{\texttt{T2 -- FlightDataNormalizerTool} (Agent~2):} Parses the aircraft and flight-plan JSON files into strict Pydantic \texttt{FlightPlanModel} records, enforces uniform units (\texttt{NM}, \texttt{ft}, \texttt{kt}, \texttt{s}) and non-negative timestamp ordering, and runs cross-file referential checks (unique aircraft identifiers, valid aircraft references, minimum route length, and valid directed edges in the GraphML network). It writes \texttt{normalized\_scenario.json} or emits \texttt{INVALID\_INPUT} diagnostics so Router~A can bypass downstream crews.
+    \item \textbf{\texttt{T3 -- TrajectoryExtrapolatorTool} (Agent~3):} Projects waypoint coordinates onto a local equirectangular plane centred on the mean latitude and longitude of the airspace nodes and computes piecewise-linear 4D trajectories $(x(t), y(t), z(t))$ assuming constant cruise speed and altitude per leg.
+    \item \textbf{\texttt{T6 -- AirspaceGraphRoutingTool} (Agent~6):} Searches the directed GraphML network for alternative origin-to-destination waypoint paths avoiding the conflicting airway segment whenever \texttt{T5} finds no feasible altitude, speed, or delay manoeuvre. Candidate routes are passed back through \texttt{T5} (\emph{evaluate} mode) before selection.
+    \item \textbf{\texttt{T7 -- ConstraintCheckerTool} (Agent~7):} Independently verifies every amended flight plan against aircraft performance limits (speed bounds and service ceiling) and, when provided, active airspace or weather restrictions. Combined with \texttt{T4}'s full-traffic re-check, \texttt{T7} produces \texttt{VALIDATED} or \texttt{REJECTED} verdicts in \texttt{validation.json} using explicit reason codes (\texttt{SECONDARY\_CONFLICT}, \texttt{TARGET\_NOT\_RESOLVED}, \texttt{LIMIT\_VIOLATION}, or \texttt{RESTRICTION\_VIOLATION}).
+    \item \textbf{\texttt{T8 -- MarkdownReportRendererTool} (Agent~8):} Reads the validated intermediate JSON artefacts (Table~\ref{tab:crews}), assigns flight clearance statuses (\texttt{CLEARED}, \texttt{CLEARED WITH AMENDMENT}, or \texttt{NOT CLEARED}) strictly from the rules in Section~\ref{sec:resolution}, and renders the deterministic Markdown report \texttt{atc\_report.md}. Agent~8 may add explanatory narrative, but \texttt{T8} prevents any LLM modification of computed numbers or statuses.
+\end{itemize}
+
+\subsubsection{Agent--Tool Matrix}\label{sec:agent-tool-matrix}
+
+Table~\ref{tab:agent-tool-matrix} maps the eight agents across all five crews to tools \texttt{T1}--\texttt{T8}. Most agents hold a single specialised tool, enforcing clear separation of responsibilities and modular unit testing per crew. The only shared tool is \texttt{T4}, which is intentionally assigned to both Agent~4 (initial conflict detection) and Agent~7 (independent verification of amended plans), while \texttt{T7} remains exclusive to Agent~7 so the planner cannot self-certify performance or airspace compliance.
+
+\begin{table}[H]
+\centering
+\caption{Agent--tool assignment matrix across all five crews}
+\label{tab:agent-tool-matrix}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\linewidth}{@{}l >{\raggedright\arraybackslash}X *{8}{c}@{}}
+\toprule
+\textbf{Crew} & \textbf{Agent} & \textbf{T1} & \textbf{T2} & \textbf{T3} & \textbf{T4*} & \textbf{T5*} & \textbf{T6} & \textbf{T7} & \textbf{T8} \\
+\midrule
+1. Data Management          & A1: Airspace Loader     & \textcolor{atcgreen}{\ding{51}} & -- & -- & -- & -- & -- & -- & -- \\
+1. Data Management          & A2: Flight Data Checker & -- & \textcolor{atcgreen}{\ding{51}} & -- & -- & -- & -- & -- & -- \\
+2. Surveillance \& Conflict & A3: Aircraft Tracker    & -- & -- & \textcolor{atcgreen}{\ding{51}} & -- & -- & -- & -- & -- \\
+2. Surveillance \& Conflict & A4: Conflict Detector   & -- & -- & -- & \textcolor{atcgreen}{\ding{51}} & -- & -- & -- & -- \\
+3. Tactical Resolution      & A5: Flight Change Planner & -- & -- & -- & -- & \textcolor{atcgreen}{\ding{51}} & -- & -- & -- \\
+3. Tactical Resolution      & A6: Route Planner       & -- & -- & -- & -- & -- & \textcolor{atcgreen}{\ding{51}} & -- & -- \\
+4. Safety Validation \& QA  & A7: Safety Checker      & -- & -- & -- & \textcolor{atcgreen}{\ding{51}} & -- & -- & \textcolor{atcgreen}{\ding{51}} & -- \\
+5. Reporting                & A8: ATC Reporter        & -- & -- & -- & -- & -- & -- & -- & \textcolor{atcgreen}{\ding{51}} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection{Extended Input Schemas}\label{sec:input-schemas}
+
+As introduced in Section~\ref{sec:inputs}, the baseline assignment dataset specifies only \texttt{id} and \texttt{speed\_kt} for each aircraft, which is insufficient to check whether a candidate speed or flight-level manoeuvre is physically achievable. We therefore extend the aircraft JSON schema with four performance fields (Table~\ref{tab:aircraft-schema}) and define an optional \texttt{restrictions.json} schema (Table~\ref{tab:restrictions-schema}) for weather cells and closed airspace elements.
+
+\begin{table}[H]
+\centering
+\caption{Extended aircraft JSON schema}
+\label{tab:aircraft-schema}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\linewidth}{@{}l l c >{\raggedright\arraybackslash}X@{}}
+\toprule
+\textbf{Field} & \textbf{Type / Unit} & \textbf{Required} & \textbf{Constraint and Consuming Tools} \\
+\midrule
+\texttt{id}                 & string          & Yes & Non-empty, unique across aircraft (\texttt{T2}, \texttt{T4}, \texttt{T8}) \\
+\texttt{speed\_kt}          & float (\texttt{kt}) & Yes & $> 0$; baseline cruise speed (\texttt{T2}, \texttt{T3}) \\
+\texttt{type}               & string          & Yes & Aircraft type designator, e.g.\ \texttt{A320} (\texttt{T2}, \texttt{T8}) \\
+\texttt{min\_speed\_kt}     & float (\texttt{kt}) & Yes & $> 0$ and $\le \texttt{speed\_kt}$ (\texttt{T2}, \texttt{T5}, \texttt{T7}) \\
+\texttt{max\_speed\_kt}     & float (\texttt{kt}) & Yes & $\ge \texttt{speed\_kt}$ (\texttt{T2}, \texttt{T5}, \texttt{T7}) \\
+\texttt{service\_ceiling\_ft} & float (\texttt{ft}) & Yes & $> 0$; maximum permitted flight level (\texttt{T2}, \texttt{T5}, \texttt{T7}) \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Optional airspace restrictions JSON schema (\texttt{restrictions.json})}
+\label{tab:restrictions-schema}
+\footnotesize
+\setlength{\tabcolsep}{4pt}
+\begin{tabularx}{\linewidth}{@{}l l c >{\raggedright\arraybackslash}X@{}}
+\toprule
+\textbf{Field} & \textbf{Type / Unit} & \textbf{Required} & \textbf{Description and Consuming Tools} \\
+\midrule
+\texttt{restriction\_id} & string & Yes & Unique restriction identifier (\texttt{T2}, \texttt{T7}, \texttt{T8}) \\
+\texttt{kind} & enum & Yes & \texttt{weather\_cell}, \texttt{closed\_waypoint}, or \texttt{closed\_flight\_level} (\texttt{T7}) \\
+\texttt{target} & object / string & Yes & Waypoint ID, altitude band (\texttt{ft}), or weather centre $(\text{lat}, \text{lon})$ + radius (\texttt{NM}) (\texttt{T7}) \\
+\texttt{start\_time\_s} & float (\texttt{s}) & Yes & Active window start $\ge 0$ (\texttt{T7}) \\
+\texttt{end\_time\_s} & float (\texttt{s}) & Yes & Active window end $> \texttt{start\_time\_s}$ (\texttt{T7}) \\
+\texttt{reason} & string & No & Human-readable cause for \texttt{validation.json} and \texttt{atc\_report.md} (\texttt{T7}, \texttt{T8}) \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Both extensions preserve full compatibility with the assignment's mandatory inputs: if \texttt{restrictions.json} is omitted, \texttt{T7} skips airspace-restriction checks and still validates separation and aircraft performance limits across the three mandatory input files.
+\endgroup
