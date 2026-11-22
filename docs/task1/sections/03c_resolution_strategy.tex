@@ -40,7 +40,7 @@ Since every flight keeps one cruise altitude in our model, all conflicts happen 
     \item \emph{Low} ($0.8 < m \le 1$): the minima are only slightly infringed.
 \end{itemize}
 
-\textbf{Priority.} Agent~4 ranks the conflicts by severity first (high to low), then by the time to loss of separation (earliest first). Any remaining ties are broken by the aircraft identifiers, so the order is always reproducible. The Tactical Resolution crew handles the conflicts in this order. Among conflicts of equal severity, the earliest one comes first, because a manoeuvre also changes everything that happens later on that flight.
+\textbf{Priority.} Agent~4 ranks the conflicts with T4, by severity first (high to low), then by the time to loss of separation (earliest first). Any remaining ties are broken by the aircraft identifiers, so the order is always reproducible. The Tactical Resolution crew handles the conflicts in this order. Among conflicts of equal severity, the earliest one comes first, because a manoeuvre also changes everything that happens later on that flight.
 
 \subsubsection{Manoeuvre Catalogue and Preference Order}\label{sec:manoeuvre-catalogue}
 
@@ -145,6 +145,6 @@ Delay $+300$\,s             & Kept    & AC1 reaches B after 225\,s, before AC2 d
 \end{tabularx}
 \end{table}
 
-The first candidate is a climb from FL300 to FL320. Both aircraft have the same options and the same departure time, so the aircraft with the larger identifier, AC2, is changed. Agent~7 marks the manoeuvre as \texttt{VALIDATED}, provided that the service ceiling of AC2 is at least 32{,}000\,ft. Agent~8 then reports AC1 as \texttt{CLEARED} and AC2 as \texttt{CLEARED WITH AMENDMENT}.
+The first candidate is a climb from FL300 to FL320. Both aircraft have the same options and the same departure time, so the aircraft with the larger identifier, AC2, is changed. Agent~7 marks the manoeuvre as \texttt{VALIDATED}, provided that the service ceiling of AC2 is at least 32\,000\,ft. Agent~8 then reports AC1 as \texttt{CLEARED} and AC2 as \texttt{CLEARED WITH AMENDMENT}.
 
 The example also shows an effect of including the limit in the conflict definition (at most 1000\,ft). Changing one flight level from a shared level leaves exactly 1000\,ft between the aircraft, which still counts as a conflict, so T5 removes this candidate.
