@@ -6,7 +6,7 @@
 
 Air traffic control (ATC) keeps aircraft safely apart. Two aircraft are in \emph{conflict} when, at the same moment, they are predicted to be within the separation minima used in this work: 5\,NM horizontally \emph{and} 1000\,ft vertically~\cite{icao4444}. Tactical ATC consists of three steps: detecting such conflicts early, assessing how serious they are, and choosing a manoeuvre that removes them without creating new ones.
 
-The aim of this practical work is to design a multi-agent system (MAS) that performs this task on a simulated airspace and is implemented with the CrewAI framework~\cite{crewai}. The input is an airspace graph, a set of aircraft and their flight plans. From these, the system must:
+The aim of this work is to design a multi-agent system (MAS) that performs this task on a simulated airspace and is implemented with the CrewAI framework~\cite{crewai}. The input is an airspace graph, a set of aircraft and their flight plans. From these, the system must:
 \begin{enumerate}
     \item validate and normalise the input data;
     \item detect every loss of separation and characterise it;
@@ -14,11 +14,11 @@ The aim of this practical work is to design a multi-agent system (MAS) that perf
     \item produce a Markdown ATC report with the final clearance status of every flight.
 \end{enumerate}
 
-\textbf{Why a multi-agent system.} The problem splits naturally into distinct kinds of expertise, much as a real control centre does: data handling, surveillance, tactical planning, independent safety checking and reporting. Each of these is assigned to a crew of specialised agents that cooperate through a shared flow. Collaborative agents are suited to problems that are physically distributed and need several specialists to cooperate, and air-traffic control is one of the standard examples~\cite{urvlect3}. Our design also keeps the agent that plans a manoeuvre separate from the agent that certifies it, a separation of duties that is common in safety-critical operations.
+\textbf{Why a multi-agent system?} The problem splits naturally into distinct kinds of expertise, much as a real control centre does: data handling, surveillance, tactical planning, independent safety checking and reporting. Each of these is assigned to a crew of specialised agents that cooperate through a shared flow. Collaborative agents are suited to problems that are physically distributed and need several specialists to cooperate, and air-traffic control is one of the standard examples~\cite{urvlect3}. Our design also keeps the agent that plans a manoeuvre separate from the agent that certifies it, a separation of duties that is common in safety-critical operations.
 
-\textbf{Scope and assumptions.} The system is an academic simulation, not an operational tool:
+\textbf{Scope and assumptions:} The system is an academic simulation, not an operational tool. Thus, we make the following simplifying assumptions:
 \begin{itemize}
-    \item \emph{Batch processing.} All information is available at the start. The system analyses it, writes the report and terminates; no new information arrives during execution.
+    \item \emph{Batch processing.} All information is available at the start. The system analyses it, reports and terminates; no new information arrives during execution.
     \item \emph{Simplified kinematics.} Aircraft fly straight legs between waypoints at constant speed and at their cruise altitude. Wind is not modelled.
     \item \emph{No real clearances.} Statuses such as \textsc{cleared} are outputs of the simulation, not instructions to pilots.
     \item \emph{Design over output quality.} The quality of the language-model output depends on the LLM used. The design therefore assigns every safety-relevant computation to deterministic tools rather than to the agents' own reasoning.

@@ -5,20 +5,20 @@
 \section{System Overview}\label{sec:overview}
 
 \subsection{Inputs}\label{sec:inputs}
-The system reads the three files required by the assignment:
+The system takes three primary input files:
 \begin{itemize}
     \item \emph{Airspace} (GraphML): a directed graph whose nodes are waypoints, each with a latitude and a longitude, and whose edges are airway segments, each with its length in nautical miles.
     \item \emph{Aircraft} (JSON): the identifier and the cruise speed (in knots) of each aircraft.
     \item \emph{Flight plans} (JSON): for each aircraft, its route as a sequence of waypoints, its departure time and its cruise altitude.
 \end{itemize}
-The assignment allows additional information, and we add two extensions:
+We also add two extensions:
 \begin{itemize}
     \item \emph{Aircraft performance limits}: aircraft type, minimum and maximum speed, and service ceiling. Without these limits the system cannot check whether a speed or altitude manoeuvre is feasible for a given aircraft.
-    \item An \emph{optional restrictions file} describing weather cells and closed waypoints or flight levels, each with a time window. If the file is absent, the system works exactly as with the three mandatory files.
+    \item An \emph{optional restrictions file} describing weather cells and closed waypoints or flight levels, each with a time window. If the file is absent, the system works directly with the three core input files.
 \end{itemize}
 
 \subsection{Crews and Flow}\label{sec:flow}
-The system has the four crews required by the assignment and one additional crew, Safety Validation \& QA, which independently re-checks every proposed manoeuvre. The choice of this crew is justified in Section~\ref{sec:agents}. Table~\ref{tab:crews} summarises the five crews. As the assignment recommends, each crew writes its result to an intermediate file. A crew can therefore be run and tested on its own, reading its input from the previous crew's file instead of re-running the whole pipeline.
+The system comprises four core operational crews and one additional crew, Safety Validation \& QA, which independently re-checks every proposed manoeuvre. The choice of this crew is justified in Section~\ref{sec:agents}. Table~\ref{tab:crews} summarises the five crews. Each crew writes its result to an intermediate file. A crew can therefore be run and tested on its own, reading its input from the previous crew's file instead of re-running the whole pipeline.
 
 \begin{table}[H]
 \centering
@@ -41,7 +41,7 @@ The system has the four crews required by the assignment and one additional crew
 A CrewAI Flow coordinates the crews (Fig.~\ref{fig:flow}). Three routers take decisions based on the data produced so far:
 \begin{itemize}
     \item \emph{Router A, inputs valid?} If validation fails, the flow skips the analysis and goes directly to Reporting, which reports the input as invalid. Invalid data is never reported as a conflict-free scenario.
-    \item \emph{Router B, conflicts found?} This is the routing rule required by the assignment. If at least one conflict is detected, the flow runs Tactical Resolution; otherwise it goes directly to Reporting.
+    \item \emph{Router B, conflicts found?} If at least one conflict is detected, the flow runs Tactical Resolution; otherwise it goes directly to Reporting.
     \item \emph{Router C, validated?} If Safety Validation accepts every manoeuvre, the flow continues to Reporting. A rejected manoeuvre is sent back to Tactical Resolution together with the reason for rejection, with at most $N = 2$ planning attempts (that is, one retry). Flights still unresolved after the second attempt are reported as \textsc{not cleared}.
 \end{itemize}
 
@@ -292,6 +292,6 @@ A CrewAI Flow coordinates the crews (Fig.~\ref{fig:flow}). Three routers take de
 \end{figure}
 
 \subsection{Design Principle: Tools Compute, Agents Decide}\label{sec:principle}
-One principle runs through the whole design: \emph{every number that matters for safety is computed by a deterministic tool, while the LLM agents decide which tools to use and interpret and explain their results}. This covers distances, times, separations and the decision to accept or reject a manoeuvre. No agent estimates a distance or declares a manoeuvre safe based on its own judgement. The conflict-detection logic is based on the reference notebook provided with the assignment.
+One principle runs through the whole design: \emph{every number that matters for safety is computed by a deterministic tool, while the LLM agents decide which tools to use and interpret and explain their results}. This covers distances, times, separations and the decision to accept or reject a manoeuvre. No agent estimates a distance or declares a manoeuvre safe based on its own judgement.
 
 We adopt this principle for three reasons. First, language models are unreliable at arithmetic, whereas checking separation is a precise geometric computation. Second, deterministic tools make the results reproducible and testable independently of the LLM. Third, it divides the work clearly between agents and tools. This division shapes both the tools assigned to each agent (Section~\ref{sec:agents}) and the classification of the agents in the taxonomy (Section~\ref{sec:taxonomy}).

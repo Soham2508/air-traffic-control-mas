@@ -6,7 +6,7 @@
 
 \textbf{Summary.} We have designed a multi-agent system for conflict detection and resolution in a simulated airspace. The system has five crews and eight agents, coordinated by a CrewAI Flow with three routers. The main design choices are:
 \begin{itemize}
-    \item \emph{An independent safety crew.} The four mandatory crews are complemented by a Safety Validation \& QA crew. The agent that plans a manoeuvre is therefore never the one that certifies it, and secondary conflicts created by a manoeuvre are caught before reporting.
+    \item \emph{An independent safety crew.} The four core operational crews are complemented by a Safety Validation \& QA crew. The agent that plans a manoeuvre is therefore never the one that certifies it, and secondary conflicts created by a manoeuvre are caught before reporting.
     \item \emph{Planning matched to the environment.} The environment is accessible, deterministic and static, and it is discretised by design (Section~\ref{sec:environment}). Deliberative planning is therefore affordable, and every plan can be verified before it is reported.
     \item \emph{Tools compute, agents decide.} Every safety-relevant computation is assigned to a deterministic tool, including the two custom tools for conflict detection and manoeuvre calculation. The LLM agents coordinate the work, take the decisions and explain them.
 \end{itemize}
@@ -24,5 +24,5 @@
     \item \emph{Process per crew:} sequential or hierarchical, and which tasks can run in parallel or asynchronously.
     \item \emph{Structured outputs:} the Pydantic models exchanged between crews, starting from the intermediate files in Table~\ref{tab:crews}.
     \item \emph{Routers:} the implementation of routers A--C in the Flow, including the retry loop with $N = 2$.
-    \item \emph{Test scenarios:} input files beyond the provided samples, so that every branch of the flow is exercised. Examples are multi-aircraft crossings, a secondary conflict created by a manoeuvre, a conflict-free scenario, an invalid input and a scenario with restricted airspace.
+    \item \emph{Test scenarios:} input files beyond the baseline sample scenarios, so that every branch of the flow is exercised. Examples are multi-aircraft crossings, a secondary conflict created by a manoeuvre, a conflict-free scenario, an invalid input and a scenario with restricted airspace.
 \end{enumerate}
