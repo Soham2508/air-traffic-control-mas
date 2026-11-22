@@ -37,6 +37,13 @@
     fonttitle=\bfseries
 }
 
+% Bold section headings (IEEEtran conference default is normal-weight small caps;
+% Times has no bold small caps, so bold upright is used)
+\makeatletter
+\def\section{\@startsection{section}{1}{\z@}{1.5ex plus 1.5ex minus 0.5ex}%
+{0.7ex plus 1ex minus 0ex}{\normalfont\normalsize\centering\bfseries}}
+\makeatother
+
 % Visible placeholder for text not written yet
 \newcommand{\placeholder}[1]{\textcolor{atcred}{\textit{[#1]}}}
 
