@@ -10,6 +10,8 @@ The separation of planning and validation also avoids having the same crew both 
 
 Weather information, where available, is treated as an optional input to the constraint-checking process rather than as a separate crew.
 
+\textbf{Alternatives considered.} We evaluated three other options before settling on this design. (i)~A separate \emph{weather crew} was rejected: in a batch simulation, weather is static input data, so a single constraint-checking tool (T7) handles it without extra coordination or LLM calls. (ii)~\emph{Merging trajectory prediction and conflict detection} into one agent was rejected: keeping two agents with one tool each makes their intermediate results testable on their own. (iii)~\emph{Letting the Tactical Resolution crew validate its own manoeuvres} was rejected for the separation-of-duties reason given above.
+
 The overall crew workflow is shown in Fig.~\ref{fig:flow}.
 
 
@@ -18,7 +20,7 @@ The overall crew workflow is shown in Fig.~\ref{fig:flow}.
 The architecture contains eight specialised agents distributed across the five crews. Each agent has a defined responsibility and access to the tools required for its tasks. The tools perform the deterministic operations, while the agents coordinate the workflow, interpret results, and make decisions within their assigned responsibilities.
 
 
-\subsubsection{Crew 1: Data Management Crew}
+\subsubsection{Data Management Crew}
 
 This crew prepares and validates the input data before it enters the surveillance and conflict analysis stage.
 
@@ -26,7 +28,7 @@ This crew prepares and validates the input data before it enters the surveillanc
 
     \item \textbf{Agent 1: Airspace Loader}
     \begin{itemize}
-        \item \textit{Who it is:} An agent that works with airspace maps, airports, waypoints and flight routes.
+        \item \textit{Who it is:} An agent that works with airspace maps, waypoints and flight routes.
         \item \textit{Main Task:} Load the airspace network from the GraphML file, check waypoint locations and connections, and prepare the network for the other agents to use.
         \item \textit{Tool:} \texttt{T1 -- AirspaceGraphLoaderTool}.
     \end{itemize}
@@ -41,7 +43,7 @@ This crew prepares and validates the input data before it enters the surveillanc
 \end{itemize}
 
 
-\subsubsection{Crew 2: Surveillance \& Conflict Crew}
+\subsubsection{Surveillance \& Conflict Crew}
 
 This crew analyses the prepared flight plans and identifies potential losses of separation between aircraft.
 
@@ -57,14 +59,14 @@ This crew analyses the prepared flight plans and identifies potential losses of 
     \item \textbf{Agent 4: Conflict Detector}
     \begin{itemize}
         \item \textit{Who it is:} An agent that identifies and analyses situations where aircraft may get too close to each other.
-        \item \textit{Main Task:} Compare aircraft trajectories and detect a conflict when both conditions are met at the same time: horizontal distance is at most $5\text{ NM}$ AND vertical distance is at most $1{,}000\text{ ft}$. For each conflict, calculate the Closest Point of Approach (CPA), estimate the time until separation is lost, identify the encounter type (head-on, crossing or same-track), assess its severity and rank it by priority.
+        \item \textit{Main Task:} Compare aircraft trajectories and detect a conflict when both conditions are met at the same time: horizontal distance is at most $5\text{ NM}$ \emph{and} vertical distance is at most $1000\text{ ft}$. For each conflict, calculate the closest point of approach (CPA), estimate the time until separation is lost, identify the encounter type (head-on, crossing or same-track), assess its severity and rank it by priority.
         \item \textit{Tool:} \texttt{T4 -- ConflictDetectionTool}.
     \end{itemize}
 
 \end{itemize}
 
 
-\subsubsection{Crew 3: Tactical Resolution Crew}
+\subsubsection{Tactical Resolution Crew}
 
 This crew develops possible actions to resolve the conflicts identified by the surveillance crew.
 
@@ -73,7 +75,7 @@ This crew develops possible actions to resolve the conflicts identified by the s
     \item \textbf{Agent 5: Flight Change Planner}
     \begin{itemize}
         \item \textit{Who it is:} An agent that plans changes to aircraft flights to restore safe separation.
-        \item \textit{Main Task:} Choose which aircraft needs a change and propose possible manoeuvres. These include changing flight level by $1{,}000$ or $2{,}000\text{ ft}$, changing speed by $10$ or $20\text{ kt}$, or delaying departure. All changes must stay within the aircraft's operational and performance limits. Evaluate the options and select a preferred proposal.
+        \item \textit{Main Task:} Choose which aircraft needs a change and propose possible manoeuvres. These include changing flight level by $1000$ or $2000\text{ ft}$, changing speed by $10$ or $20\text{ kt}$, or delaying departure. All changes must stay within the aircraft's operational and performance limits. Evaluate the options and select a preferred proposal.
         \item \textit{Tool:} \texttt{T5 -- ManeuverCalculationTool}.
     \end{itemize}
 
@@ -87,11 +89,11 @@ This crew develops possible actions to resolve the conflicts identified by the s
 \end{itemize}
 
 
-\subsubsection{Crew 4: Safety Validation \& Quality Assurance Crew}
+\subsubsection{Safety Validation \& Quality Assurance Crew}
 
 This additional crew independently checks the flight-plan changes proposed by the tactical resolution crew. It does not approve its own planning decisions.
 
-\begin{itemize}
+\begin{itemize}[leftmargin=*]
 
     \item \textbf{Agent 7: Safety Checker}
     \begin{itemize}
@@ -103,11 +105,11 @@ This additional crew independently checks the flight-plan changes proposed by th
 \end{itemize}
 
 
-\subsubsection{Crew 5: Reporting Crew}
+\subsubsection{Reporting Crew}
 
 This crew collects the results from the other crews and prepares the final output.
 
-\begin{itemize}
+\begin{itemize}[leftmargin=*]
 
     \item \textbf{Agent 8: ATC Reporter}
     \begin{itemize}

@@ -40,12 +40,12 @@ The system comprises four core operational crews and one additional crew, Safety
 
 A CrewAI Flow coordinates the crews (Fig.~\ref{fig:flow}). Three routers take decisions based on the data produced so far:
 \begin{itemize}
-    \item \emph{Router A, inputs valid?} If validation fails, the flow skips the analysis and goes directly to Reporting, which reports the input as invalid. Invalid data is never reported as a conflict-free scenario.
+    \item \emph{Router A, inputs valid?} If validation fails, the flow skips the analysis and goes directly to Reporting, which reports the input as invalid; no flight is cleared. Invalid data is never reported as a conflict-free scenario.
     \item \emph{Router B, conflicts found?} If at least one conflict is detected, the flow runs Tactical Resolution; otherwise it goes directly to Reporting.
     \item \emph{Router C, validated?} If Safety Validation accepts every manoeuvre, the flow continues to Reporting. A rejected manoeuvre is sent back to Tactical Resolution together with the reason for rejection, with at most $N = 2$ planning attempts (that is, one retry). Flights still unresolved after the second attempt are reported as \textsc{not cleared}.
 \end{itemize}
 
-\begin{figure}[H]
+\begin{figure}[!t]
 \centering
 \resizebox{\linewidth}{!}{%
 % Copied from slides/sections/03_overview.tex -- keep both in sync.

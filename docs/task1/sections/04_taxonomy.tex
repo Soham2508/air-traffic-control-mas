@@ -2,7 +2,7 @@
 % No preamble here: only the section body. Packages and colours come from ../main.tex.
 \section{Agent Taxonomy}\label{sec:taxonomy}
 
-This section classifies the eight agents of Section~\ref{sec:agents} using the taxonomy of Lecture~3 \cite{urvlect3} (agent properties and types by purpose) and the architectures of Lecture~2 \cite{urvlect2,wooldridge2009} (reactive, deliberative or hybrid). It also describes how existing code was turned into tools for the agents and how the system is organised. The agents are referred to as A1--A8: A1 Airspace Loader, A2 Flight Data Checker, A3 Aircraft Tracker, A4 Conflict Detector, A5 Flight Change Planner, A6 Route Planner, A7 Safety Checker and A8 ATC Reporter.
+This section classifies the eight agents of Section~\ref{sec:agents} using the taxonomy of Lecture~3 \cite{urvlect3,nwana1996} (agent properties and types by purpose) and the architectures of Lecture~2 \cite{urvlect2,wooldridge2009} (reactive, deliberative or hybrid). It also describes how existing code was turned into tools for the agents and how the system is organised. The agents are referred to as A1--A8: A1 Airspace Loader, A2 Flight Data Checker, A3 Aircraft Tracker, A4 Conflict Detector, A5 Flight Change Planner, A6 Route Planner, A7 Safety Checker and A8 ATC Reporter.
 
 \subsection{Agent Properties}\label{sec:properties}
 
@@ -10,7 +10,7 @@ Table~\ref{tab:properties} gives the level of each property for each agent. H, M
 
 \begin{table}[!t]
 \centering
-\caption{Properties of the eight agents in our system.}
+\caption{Properties of the eight agents in our system}
 \label{tab:properties}
 \small
 \begin{tabular}{l*{8}{c}}
@@ -37,7 +37,7 @@ Veracity                & H & H & H & H & H & H & H & H \\
 \begin{itemize}[leftmargin=*]
     \item \textbf{Flexibility.} A flexible agent is adaptive, proactive and social. A5 is the most flexible agent: when A7 rejects a manoeuvre, A5 receives the rejection reasons and adapts its proposal. A1--A3 and A8 follow a fixed procedure, so their flexibility is low.
     \item \textbf{Reactivity.} The environment is static (Section~\ref{sec:environment}), so there are no external changes to respond to during a run. The only changes are those caused by the agents themselves: A5 and A6 react to rejected manoeuvres, and A7 reacts to every amended plan. The remaining agents respond once to the output of the previous step.
-    \item \textbf{Proactiveness.} A5 shows goal-directed behaviour: it generates candidate manoeuvres and selects one in order to reach a conflict-free situation. A6 searches for an alternative route when A5 hands over a conflict that no other manoeuvre can solve. A4 goes beyond detection by ranking the conflicts. A1--A3 and A8 are driven only by their input.
+    \item \textbf{Proactiveness.} A5 shows goal-directed behaviour: it generates candidate manoeuvres and selects one in order to reach a conflict-free situation. A6 searches for an alternative route when A5 hands over a conflict that no other manoeuvre can solve. A4 goes beyond detection by ranking the conflicts with T4. A1--A3 and A8 are driven only by their input.
     \item \textbf{Social ability.} The agents do not exchange messages in an agent communication language. They interact indirectly, through the state of the Flow and the intermediate files. The interaction is strongest between A5, A6 and A7, which cooperate in the resolution and validation loop, and A4, whose output decides whether the Tactical Resolution crew runs at all.
     \item \textbf{Rationality.} Every agent acts only to achieve its goal and never against it. In particular, no agent produces a numerical value without the corresponding tool (Section~\ref{sec:principle}).
     \item \textbf{Reasoning.} A5 and A6 have the highest reasoning capabilities, because they must make plans: A5 chooses which aircraft to manoeuvre and how, and A6 plans a new route in the airspace graph. A4 and A7 interpret the results of their tools (severity, ranking, reasons for rejection). A1--A3 and A8 apply their tools almost directly.
@@ -70,7 +70,7 @@ Following Lecture~2 \cite{urvlect2}, each agent is classified as reactive, delib
     \item \textbf{Hybrid (A4).} It combines a reactive part, the separation rule of 5~NM and 1000~ft \cite{icao4444}, with a deliberative part, the characterisation and ranking of the conflicts.
 \end{itemize}
 
-A5 can be described with the belief--desire--intention (BDI) model of Lecture~2 \cite{urvlect2}:
+A5 can be described with the belief--desire--intention (BDI) model of Lecture~2 \cite{urvlect2,bratman1987,rao1995}:
 \begin{itemize}[leftmargin=*]
     \item \textit{Beliefs:} the 4D trajectories, the detected conflicts and the limits of each aircraft.
     \item \textit{Desires:} no conflicts and no changes to the original flight plans.

@@ -54,14 +54,18 @@
                   November 2026}}
 
 \maketitle
+\thispagestyle{plain}
+\pagestyle{plain}
 
 \begin{abstract}
-\placeholder{Abstract (Aram): 4--6 sentences summarising the problem, the five crews, the flow and the main design choices. Write it last.}
+This report presents the design of a multi-agent system for air traffic control (ATC) conflict detection and resolution, to be implemented with CrewAI. Given an airspace graph, aircraft data and flight plans, the system detects losses of separation (within 5\,NM horizontally and 1000\,ft vertically), characterises them, proposes resolution manoeuvres and produces a Markdown report with a clearance status for every flight. Eight agents are organised in five crews (Data Management, Surveillance \& Conflict, Tactical Resolution, an additional Safety Validation \& QA crew, and Reporting) and coordinated by a CrewAI Flow with three routers, including a bounded retry loop between planning and validation. Every safety-relevant number is computed by deterministic tools, two of them custom, while the language-model agents decide and explain. We characterise the environment as accessible, deterministic, static and discretised by design, episodic across runs but not within a run, and classify every agent by the properties, types and architectures studied in the course.
 \end{abstract}
 
 \begin{IEEEkeywords}
 multi-agent systems, air traffic control, conflict detection and resolution, CrewAI, agent taxonomy
 \end{IEEEkeywords}
+
+\tableofcontents
 
 \input{sections/00_intro}                 % Aram
 \input{sections/01_overview}              % Aram (figure shared with slide 3)
